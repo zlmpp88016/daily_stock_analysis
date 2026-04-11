@@ -1,0 +1,13 @@
+{
+    "failed":  0,
+    "total":  5,
+    "failed_tests":  [
+
+                     ],
+    "passed":  5,
+    "pass_rate":  100,
+    "smoke_check":  "failed",
+    "exit_code":  0,
+    "criticality":  "high",
+    "smoke_error":  "OperationalError"
+}

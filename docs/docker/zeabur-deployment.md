@@ -130,6 +130,14 @@ Dockerfile 已采用多阶段构建，前端会在镜像构建时自动打包。
 | `PYTHONUNBUFFERED` | 启用 Python 无缓冲输出 | `1` |
 | `LOG_DIR` | 日志目录 | `/app/logs` |
 | `DATABASE_PATH` | 数据库路径 | `/app/data/stock_analysis.db` |
+| `DATABASE_URL` | PostgreSQL 连接 URL（可选） | `postgresql+psycopg://user:pass@host:5432/db` |
+| `POSTGRES_HOST` | PostgreSQL 主机（可选） | `db.example.com` |
+| `POSTGRES_PORT` | PostgreSQL 端口（可选） | `5432` |
+| `POSTGRES_DB` | PostgreSQL 数据库名（可选） | `stock_analysis` |
+| `POSTGRES_USER` | PostgreSQL 用户（可选） | `postgres` |
+| `POSTGRES_PASSWORD` | PostgreSQL 密码（可选） | `your_password` |
+| `POSTGRES_SSLMODE` | PostgreSQL SSL 模式（可选） | `disable` |
+| `DATA_DIR` | 认证数据目录（可选） | `/app/data` |
 
 ### 5.2 API 服务配置
 

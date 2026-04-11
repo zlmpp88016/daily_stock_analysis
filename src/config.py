@@ -235,6 +235,13 @@ class Config:
 
     # === 数据库配置 ===
     database_path: str = "./data/stock_analysis.db"
+    database_url: Optional[str] = None
+    postgres_host: Optional[str] = None
+    postgres_port: int = 5432
+    postgres_db: Optional[str] = None
+    postgres_user: Optional[str] = None
+    postgres_password: Optional[str] = None
+    postgres_sslmode: Optional[str] = None
 
     # 是否保存分析上下文快照（用于历史回溯）
     save_context_snapshot: bool = True
@@ -679,6 +686,13 @@ class Config:
             md2img_engine=cls._parse_md2img_engine(os.getenv('MD2IMG_ENGINE', 'wkhtmltoimage')),
             prefetch_realtime_quotes=os.getenv('PREFETCH_REALTIME_QUOTES', 'true').lower() == 'true',
             database_path=os.getenv('DATABASE_PATH', './data/stock_analysis.db'),
+            database_url=os.getenv('DATABASE_URL', '').strip() or None,
+            postgres_host=os.getenv('POSTGRES_HOST', '').strip() or None,
+            postgres_port=int(os.getenv('POSTGRES_PORT', '5432') or 5432),
+            postgres_db=os.getenv('POSTGRES_DB', '').strip() or None,
+            postgres_user=os.getenv('POSTGRES_USER', '').strip() or None,
+            postgres_password=os.getenv('POSTGRES_PASSWORD', '').strip() or None,
+            postgres_sslmode=os.getenv('POSTGRES_SSLMODE', '').strip() or None,
             save_context_snapshot=os.getenv('SAVE_CONTEXT_SNAPSHOT', 'true').lower() == 'true',
             backtest_enabled=os.getenv('BACKTEST_ENABLED', 'true').lower() == 'true',
             backtest_eval_window_days=int(os.getenv('BACKTEST_EVAL_WINDOW_DAYS', '10')),
@@ -1239,10 +1253,33 @@ class Config:
     
     def get_db_url(self) -> str:
         """
-        获取 SQLAlchemy 数据库连接 URL
-        
-        自动创建数据库目录（如果不存在）
+        Build SQLAlchemy database URL.
+
+        For SQLite, ensure the database directory exists.
         """
+        database_url = (self.database_url or "").strip()
+        if database_url:
+            parsed = urlparse(database_url)
+            if parsed.scheme in ("postgres", "postgresql"):
+                return database_url.replace(f"{parsed.scheme}://", "postgresql+psycopg://", 1)
+            return database_url
+
+        postgres_host = (self.postgres_host or "").strip()
+        postgres_db = (self.postgres_db or "").strip()
+        postgres_user = (self.postgres_user or "").strip()
+        postgres_password = (self.postgres_password or "").strip()
+        if postgres_host and postgres_db and postgres_user:
+            credentials = postgres_user
+            if postgres_password:
+                credentials = f"{credentials}:{postgres_password}"
+            credentials = f"{credentials}@"
+            postgres_port = self.postgres_port or 5432
+            sslmode = (self.postgres_sslmode or "").strip()
+            query = f"?sslmode={sslmode}" if sslmode else ""
+            return (
+                f"postgresql+psycopg://{credentials}{postgres_host}:{postgres_port}/{postgres_db}{query}"
+            )
+
         db_path = Path(self.database_path)
         db_path.parent.mkdir(parents=True, exist_ok=True)
         return f"sqlite:///{db_path.absolute()}"

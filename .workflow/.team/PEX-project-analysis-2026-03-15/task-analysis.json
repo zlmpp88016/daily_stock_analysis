@@ -1,0 +1,24 @@
+{
+  "task_description": "分析当前项目结构和功能结构，着重分析主要的股票分析流程以及论股功能的代码流程，汇总到/vibecoding/project-struct/下",
+  "input_type": "text",
+  "raw_input": "分析当前项目结构和功能结程，着重分析主要的股票分析流程以及论股功能的代码流程，汇总到/vibecoding/project-struct/  下",
+  "execution_method": "codex",
+  "issue_count_estimate": 1,
+  "complexity": {
+    "score": 5,
+    "level": "Medium"
+  },
+  "pipeline_type": "plan-execute",
+  "roles": [
+    {
+      "name": "planner",
+      "prefix": "PLAN",
+      "inner_loop": true
+    },
+    {
+      "name": "executor",
+      "prefix": "EXEC",
+      "inner_loop": true
+    }
+  ]
+}

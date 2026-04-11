@@ -11,6 +11,7 @@ Daily Stock Analysis - FastAPI 后端服务入口
 4. 托管前端静态文件（生产模式）
 
 启动方式：
+
     uvicorn server:app --reload --host 0.0.0.0 --port 8000
     
     或使用 main.py:

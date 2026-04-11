@@ -35,6 +35,14 @@ x-common: &common
     # Web/API service bind address (must be 0.0.0.0 inside container)
     - WEBUI_HOST=0.0.0.0
     # API_PORT 从 .env 文件读取，无需在此硬编码
+    # PostgreSQL (optional)
+    - DATABASE_URL=${DATABASE_URL:-}
+    - POSTGRES_HOST=${POSTGRES_HOST:-}
+    - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+    - POSTGRES_DB=${POSTGRES_DB:-}
+    - POSTGRES_USER=${POSTGRES_USER:-}
+    - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-}
+    - POSTGRES_SSLMODE=${POSTGRES_SSLMODE:-}
 
     # 代理设置（如果需要）
     # - http_proxy=http://host.docker.internal:10809
@@ -53,6 +61,22 @@ x-common: &common
         memory: 256M
 
 services:
+  # Optional local PostgreSQL (enable with COMPOSE_PROFILES=postgres)
+  postgres:
+    image: postgres:16-alpine
+    profiles:
+      - postgres
+    container_name: stock-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-stock_analysis}
+      - POSTGRES_USER=${POSTGRES_USER:-stock}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-stock}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - ../data/postgres:/var/lib/postgresql/data
+
   # 定时任务模式
   analyzer:
     <<: *common

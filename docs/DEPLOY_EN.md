@@ -40,6 +40,10 @@ cd /opt/stock-analyzer
 # Copy and edit configuration file
 cp .env.example .env
 vim .env  # Fill in real API Keys and configuration
+
+# Optional: PostgreSQL
+# - Use DATABASE_URL or POSTGRES_* to switch from SQLite
+# - Migration guide: docs/migration-sqlite-to-postgres.md
 ```
 
 ### 3. One-Click Start
@@ -111,6 +115,10 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```bash
 cp .env.example .env
 vim .env  # Fill in configuration
+
+# Optional: PostgreSQL
+# - Use DATABASE_URL or POSTGRES_* to switch from SQLite
+# - Migration guide: docs/migration-sqlite-to-postgres.md
 ```
 
 ### 4. Run

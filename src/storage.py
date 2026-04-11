@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 ===================================
 A股自选股智能分析系统 - 存储层
@@ -424,38 +424,48 @@ class DatabaseManager:
         """
         if getattr(self, '_initialized', False):
             return
-        
+
+        self._init_error = None
+
         if db_url is None:
             config = get_config()
             db_url = config.get_db_url()
-        
-        # 创建数据库引擎
-        self._engine = create_engine(
-            db_url,
-            echo=False,  # 设为 True 可查看 SQL 语句
-            pool_pre_ping=True,  # 连接健康检查
-        )
-        
-        # 创建 Session 工厂
-        self._SessionLocal = sessionmaker(
-            bind=self._engine,
-            autocommit=False,
-            autoflush=False,
-        )
-        
-        # 创建所有表
-        Base.metadata.create_all(self._engine)
 
-        self._initialized = True
-        logger.info(f"数据库初始化完成: {db_url}")
+        try:
 
-        # 注册退出钩子，确保程序退出时关闭数据库连接
-        atexit.register(DatabaseManager._cleanup_engine, self._engine)
+        
+            # 创建数据库引擎
+            self._engine = create_engine(
+                db_url,
+                echo=False,  # 设为 True 可查看 SQL 语句
+                pool_pre_ping=True,  # 连接健康检查
+            )
+        
+            # 创建 Session 工厂
+            self._SessionLocal = sessionmaker(
+                bind=self._engine,
+                autocommit=False,
+                autoflush=False,
+            )
+        
+            # 创建所有表
+            Base.metadata.create_all(self._engine)
+
+            self._initialized = True
+            logger.info(f"数据库初始化完成: {db_url}")
+
+            # 注册退出钩子，确保程序退出时关闭数据库连接
+            atexit.register(DatabaseManager._cleanup_engine, self._engine)
+        except Exception as exc:
+            self._init_error = exc
+            raise
     
     @classmethod
     def get_instance(cls) -> 'DatabaseManager':
         """获取单例实例"""
         if cls._instance is None:
+            cls._instance = cls()
+        elif not getattr(cls._instance, '_initialized', False):
             cls._instance = cls()
         return cls._instance
     
@@ -495,6 +505,12 @@ class DatabaseManager:
                 session.commit()  # 如果需要
         """
         if not getattr(self, '_initialized', False) or not hasattr(self, '_SessionLocal'):
+            init_error = getattr(self, '_init_error', None)
+            if init_error is not None:
+                raise RuntimeError(
+                    "DatabaseManager 未正确初始化，可能是数据库连接失败。"
+                    "请检查 DATABASE_URL/POSTGRES_* 配置与连接状态。"
+                ) from init_error
             raise RuntimeError(
                 "DatabaseManager 未正确初始化。"
                 "请确保通过 DatabaseManager.get_instance() 获取实例。"

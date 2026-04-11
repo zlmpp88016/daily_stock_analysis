@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "id": "IMPL-001.3",
+    "type": "code-validation",
+    "owner": "test-fix-agent",
+    "description": "Run syntax validation for config and auth modules"
+  },
+  "context": {
+    "commands": ["python -m py_compile src/config.py src/auth.py"]
+  }
+}

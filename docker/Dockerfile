@@ -57,6 +57,7 @@ RUN mkdir -p /app/data /app/logs /app/reports
 ENV PYTHONUNBUFFERED=1
 ENV LOG_DIR=/app/logs
 ENV DATABASE_PATH=/app/data/stock_analysis.db
+# Optional PostgreSQL envs: DATABASE_URL / POSTGRES_HOST / POSTGRES_PORT / POSTGRES_DB / POSTGRES_USER / POSTGRES_PASSWORD / POSTGRES_SSLMODE
 # Web/API service
 ENV WEBUI_HOST=0.0.0.0
 ENV API_PORT=8000

@@ -1,0 +1,70 @@
+{
+  "metadata": {
+    "task_description": "Validate PostgreSQL .env configuration and ensure runtime/tests pass",
+    "timestamp": "2026-03-15T23:22:28",
+    "keywords": ["postgres", "database", "config", "env", "sqlalchemy", "tests"],
+    "complexity": "medium",
+    "session_id": "WFS-test-db-postgres-20260315-231932"
+  },
+  "project_context": {
+    "architecture_patterns": ["config-driven settings", "sqlalchemy engine", "single DB URL builder"],
+    "coding_conventions": {
+      "naming": {"functions": "snake_case", "classes": "PascalCase"},
+      "error_handling": {"pattern": "explicit try/except where needed"},
+      "async_patterns": {"preferred": "sync"}
+    },
+    "tech_stack": {
+      "language": "python",
+      "frameworks": ["fastapi"],
+      "libraries": ["sqlalchemy", "python-dotenv", "psycopg"],
+      "testing": ["pytest"]
+    }
+  },
+  "assets": {
+    "documentation": [
+      {"path": "README.md", "scope": "project", "relevance_score": 0.8},
+      {"path": "docs/DEPLOY.md", "scope": "deployment", "relevance_score": 0.8},
+      {"path": "docs/DEPLOY_EN.md", "scope": "deployment", "relevance_score": 0.8},
+      {"path": "docs/migration-sqlite-to-postgres.md", "scope": "migration", "relevance_score": 0.95},
+      {"path": "docs/docker/zeabur-deployment.md", "scope": "deployment", "relevance_score": 0.7}
+    ],
+    "source_code": [
+      {"path": "src/config.py", "role": "db-url-builder", "relevance_score": 0.99},
+      {"path": "src/auth.py", "role": "auth-data-dir", "relevance_score": 0.85},
+      {"path": "src/storage.py", "role": "db-engine-init", "relevance_score": 0.9}
+    ],
+    "config": [
+      {"path": ".env", "relevance_score": 0.95},
+      {"path": ".env.example", "relevance_score": 0.9},
+      {"path": "requirements.txt", "relevance_score": 0.8},
+      {"path": "docker/Dockerfile", "relevance_score": 0.7},
+      {"path": "docker/docker-compose.yml", "relevance_score": 0.7}
+    ],
+    "tests": [
+      {"path": "tests/test_config_db_url.py", "relevance_score": 0.95}
+    ]
+  },
+  "dependencies": {
+    "internal": [
+      {"from": "src/storage.py", "to": "src/config.py", "type": "config-dependency"},
+      {"from": "src/auth.py", "to": "src/config.py", "type": "env-consumption"}
+    ],
+    "external": [
+      {"package": "sqlalchemy", "version": ">=2.0.0", "usage": "ORM engine"},
+      {"package": "psycopg[binary]", "version": ">=3.1.0", "usage": "PostgreSQL driver"},
+      {"package": "python-dotenv", "version": ">=1.0.0", "usage": "env loading"}
+    ]
+  },
+  "conflict_detection": {
+    "risk_level": "low",
+    "risk_factors": {
+      "existing_implementations": ["src/config.py", "src/auth.py"],
+      "api_changes": false,
+      "architecture_changes": false,
+      "data_model_changes": false,
+      "breaking_changes": []
+    },
+    "affected_modules": ["config", "storage", "auth"],
+    "mitigation_strategy": "Validate DB URL selection and run targeted tests"
+  }
+}

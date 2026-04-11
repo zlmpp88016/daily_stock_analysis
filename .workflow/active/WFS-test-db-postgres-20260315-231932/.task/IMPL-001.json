@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "id": "IMPL-001",
+    "type": "test-gen",
+    "owner": "code-developer",
+    "description": "Ensure DB URL selection tests exist for PostgreSQL config changes"
+  },
+  "context": {
+    "requirements": [
+      "DATABASE_URL override",
+      "POSTGRES_* complete fields",
+      "SQLite fallback and mkdir only for SQLite"
+    ],
+    "context_package_path": ".workflow/active/WFS-test-db-postgres-20260315-231932/.process/context-package.json"
+  }
+}

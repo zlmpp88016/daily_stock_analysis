@@ -1,0 +1,4 @@
+- [ ] IMPL-001: Verify tests exist for DB URL selection
+- [ ] IMPL-001.3: Run syntax validation
+- [ ] IMPL-001.5: Review test coverage
+- [ ] IMPL-002: Run tests and smoke check

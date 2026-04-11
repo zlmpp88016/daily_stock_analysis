@@ -1,0 +1,13 @@
+{
+  "meta": {
+    "id": "IMPL-002",
+    "type": "test-fix",
+    "owner": "test-fix-agent",
+    "description": "Execute DB URL tests and runtime smoke check",
+    "max_iterations": 5
+  },
+  "context": {
+    "test_command": "python -m pytest tests/test_config_db_url.py",
+    "smoke_command": "python -c \"from src.storage import DatabaseManager; DatabaseManager(); print('ok')\""
+  }
+}

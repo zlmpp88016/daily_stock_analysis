@@ -1,0 +1,14 @@
+{
+    "next_action":  "manual_fix_required",
+    "current_task":  "IMPL-002",
+    "iterations":  [
+                       {
+                           "iteration":  1,
+                           "notes":  "pytest passed; smoke_check failed with OperationalError",
+                           "failed_tests":  "",
+                           "pass_rate":  100,
+                           "strategy":  "conservative"
+                       }
+                   ],
+    "selected_strategy":  "conservative"
+}

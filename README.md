@@ -196,6 +196,10 @@ cp .env.example .env && vim .env
 python main.py
 ```
 
+可选：PostgreSQL。使用 `DATABASE_URL` 或 `POSTGRES_*` 切换数据库，迁移参考 `docs/migration-sqlite-to-postgres.md`。
+
+如需将 `E:\learning\stock\stock\增量\日线` 的历史 CSV 全量回灌到 PostgreSQL，可使用 `python scripts/import_stock_daily_csv.py`，运行说明见 `docs/stock_daily_csv_import.md`。
+
 > Docker 部署、定时任务配置请参考 [完整指南](docs/full-guide.md)
 > 桌面客户端打包请参考 [桌面端打包说明](docs/desktop-package.md)
 
@@ -228,6 +232,10 @@ python main.py
 📢 最新动态: 【最新消息】舆情显示公司是AI PCB微钻领域龙头，深度绑定全球头部PCB/载板厂。2月5日主力资金净卖出3.63亿元，需关注后续资金流向。
 
 ---
+
+## Historical CSV Import
+
+See [docs/stock_daily_csv_import.md](docs/stock_daily_csv_import.md) for the PostgreSQL historical CSV importer. It now supports year-range sync, single-file import via `--file`, and a `--pre-insert-hook module:function` extension point before rows are staged.
 生成时间: 18:00
 ```
 

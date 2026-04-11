@@ -1,0 +1,9 @@
+{
+    "fixes":  [
+                  {
+                      "iteration":  1,
+                      "result":  "module_not_found_resolved",
+                      "action":  "install_psycopg_binary"
+                  }
+              ]
+}

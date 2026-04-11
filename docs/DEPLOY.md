@@ -40,6 +40,10 @@ cd /opt/stock-analyzer
 # 复制并编辑配置文件
 cp .env.example .env
 vim .env  # 填入真实的 API Key 等配置
+
+# 可选：PostgreSQL
+# - 使用 DATABASE_URL 或 POSTGRES_* 切换 SQLite
+# - 迁移指南：docs/migration-sqlite-to-postgres.md
 ```
 
 ### 3. 一键启动
@@ -111,6 +115,10 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```bash
 cp .env.example .env
 vim .env  # 填入配置
+
+# 可选：PostgreSQL
+# - 使用 DATABASE_URL 或 POSTGRES_* 切换 SQLite
+# - 迁移指南：docs/migration-sqlite-to-postgres.md
 ```
 
 ### 4. 运行

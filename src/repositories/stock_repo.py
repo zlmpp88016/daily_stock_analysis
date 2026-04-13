@@ -81,21 +81,23 @@ class StockRepository:
         self,
         df: pd.DataFrame,
         code: str,
-        data_source: str = "Unknown"
+        data_source: str = "Unknown",
+        name: str = ""
     ) -> int:
         """
         保存 DataFrame 到数据库
-        
+
         Args:
             df: 包含日线数据的 DataFrame
             code: 股票代码
             data_source: 数据来源
-            
+            name: 股票名称
+
         Returns:
             保存的记录数
         """
         try:
-            return self.db.save_daily_data(df, code, data_source)
+            return self.db.save_daily_data(df, code, data_source, name=name)
         except Exception as e:
             logger.error(f"保存日线数据失败: {e}")
             return 0

@@ -21,11 +21,11 @@ function outcomeBadge(outcome?: string) {
   if (!outcome) return <Badge variant="default">--</Badge>;
   switch (outcome) {
     case 'win':
-      return <Badge variant="success" glow>WIN</Badge>;
+      return <Badge variant="success" glow>盈利</Badge>;
     case 'loss':
-      return <Badge variant="danger" glow>LOSS</Badge>;
+      return <Badge variant="danger" glow>亏损</Badge>;
     case 'neutral':
-      return <Badge variant="warning">NEUTRAL</Badge>;
+      return <Badge variant="warning">中性</Badge>;
     default:
       return <Badge variant="default">{outcome}</Badge>;
   }
@@ -34,11 +34,11 @@ function outcomeBadge(outcome?: string) {
 function statusBadge(status: string) {
   switch (status) {
     case 'completed':
-      return <Badge variant="success">completed</Badge>;
-    case 'insufficient':
-      return <Badge variant="warning">insufficient</Badge>;
+      return <Badge variant="success">已完成</Badge>;
+    case 'insufficient_data':
+      return <Badge variant="warning">数据不足</Badge>;
     case 'error':
-      return <Badge variant="danger">error</Badge>;
+      return <Badge variant="danger">错误</Badge>;
     default:
       return <Badge variant="default">{status}</Badge>;
   }
@@ -66,21 +66,21 @@ const PerformanceCard: React.FC<{ metrics: PerformanceMetrics; title: string }> 
     <div className="mb-3">
       <span className="label-uppercase">{title}</span>
     </div>
-    <MetricRow label="Direction Accuracy" value={pct(metrics.directionAccuracyPct)} accent />
-    <MetricRow label="Win Rate" value={pct(metrics.winRatePct)} accent />
-    <MetricRow label="Avg Sim. Return" value={pct(metrics.avgSimulatedReturnPct)} />
-    <MetricRow label="Avg Stock Return" value={pct(metrics.avgStockReturnPct)} />
-    <MetricRow label="SL Trigger Rate" value={pct(metrics.stopLossTriggerRate)} />
-    <MetricRow label="TP Trigger Rate" value={pct(metrics.takeProfitTriggerRate)} />
-    <MetricRow label="Avg Days to Hit" value={metrics.avgDaysToFirstHit != null ? metrics.avgDaysToFirstHit.toFixed(1) : '--'} />
+    <MetricRow label="方向准确率" value={pct(metrics.directionAccuracyPct)} accent />
+    <MetricRow label="胜率" value={pct(metrics.winRatePct)} accent />
+    <MetricRow label="平均模拟收益" value={pct(metrics.avgSimulatedReturnPct)} />
+    <MetricRow label="平均涨跌幅" value={pct(metrics.avgStockReturnPct)} />
+    <MetricRow label="止损触发率" value={pct(metrics.stopLossTriggerRate)} />
+    <MetricRow label="止盈触发率" value={pct(metrics.takeProfitTriggerRate)} />
+    <MetricRow label="平均命中天数" value={metrics.avgDaysToFirstHit != null ? metrics.avgDaysToFirstHit.toFixed(1) : '--'} />
     <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between">
-      <span className="text-xs text-muted">Evaluations</span>
+      <span className="text-xs text-muted">评估数</span>
       <span className="text-xs text-secondary font-mono">
         {Number(metrics.completedCount)} / {Number(metrics.totalEvaluations)}
       </span>
     </div>
     <div className="flex items-center justify-between">
-      <span className="text-xs text-muted">W / L / N</span>
+      <span className="text-xs text-muted">盈 / 亏 / 中性</span>
       <span className="text-xs font-mono">
         <span className="text-emerald-400">{metrics.winCount}</span>
         {' / '}
@@ -96,12 +96,12 @@ const PerformanceCard: React.FC<{ metrics: PerformanceMetrics; title: string }> 
 
 const RunSummary: React.FC<{ data: BacktestRunResponse }> = ({ data }) => (
   <div className="flex items-center gap-4 px-3 py-2 rounded-lg bg-elevated border border-white/5 text-xs font-mono animate-fade-in">
-    <span className="text-secondary">Processed: <span className="text-white">{data.processed}</span></span>
-    <span className="text-secondary">Saved: <span className="text-cyan">{data.saved}</span></span>
-    <span className="text-secondary">Completed: <span className="text-emerald-400">{data.completed}</span></span>
-    <span className="text-secondary">Insufficient: <span className="text-amber-400">{data.insufficient}</span></span>
+    <span className="text-secondary">已处理: <span className="text-white">{data.processed}</span></span>
+    <span className="text-secondary">已保存: <span className="text-cyan">{data.saved}</span></span>
+    <span className="text-secondary">完成: <span className="text-emerald-400">{data.completed}</span></span>
+    <span className="text-secondary">数据不足: <span className="text-amber-400">{data.insufficient}</span></span>
     {data.errors > 0 && (
-      <span className="text-secondary">Errors: <span className="text-red-400">{data.errors}</span></span>
+      <span className="text-secondary">错误: <span className="text-red-400">{data.errors}</span></span>
     )}
   </div>
 );
@@ -243,7 +243,7 @@ const BacktestPage: React.FC = () => {
               value={codeFilter}
               onChange={(e) => setCodeFilter(e.target.value.toUpperCase())}
               onKeyDown={handleKeyDown}
-              placeholder="Filter by stock code (leave empty for all)"
+              placeholder="按股票代码筛选（留空为全部）"
               disabled={isRunning}
               className="input-terminal w-full"
             />
@@ -254,10 +254,10 @@ const BacktestPage: React.FC = () => {
             disabled={isLoadingResults}
             className="btn-secondary flex items-center gap-1.5 whitespace-nowrap"
           >
-            Filter
+            筛选
           </button>
           <div className="flex items-center gap-1 whitespace-nowrap">
-            <span className="text-xs text-muted">Window</span>
+            <span className="text-xs text-muted">窗口天数</span>
             <input
               type="number"
               min={1}
@@ -287,7 +287,7 @@ const BacktestPage: React.FC = () => {
               inline-block w-1.5 h-1.5 rounded-full transition-colors duration-200
               ${forceRerun ? 'bg-cyan shadow-[0_0_4px_rgba(0,212,255,0.6)]' : 'bg-white/20'}
             `} />
-            Force
+            强制重跑
           </button>
           <button
             type="button"
@@ -301,10 +301,10 @@ const BacktestPage: React.FC = () => {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                Running...
+                执行中...
               </>
             ) : (
-              'Run Backtest'
+              '执行回测'
             )}
           </button>
         </div>
@@ -327,11 +327,11 @@ const BacktestPage: React.FC = () => {
               <div className="w-8 h-8 border-2 border-cyan/20 border-t-cyan rounded-full animate-spin" />
             </div>
           ) : overallPerf ? (
-            <PerformanceCard metrics={overallPerf} title="Overall Performance" />
+            <PerformanceCard metrics={overallPerf} title="整体表现" />
           ) : (
             <Card padding="md">
               <p className="text-xs text-muted text-center py-4">
-                No backtest data yet. Run a backtest to see performance metrics.
+                暂无回测数据。执行回测以查看绩效指标。
               </p>
             </Card>
           )}
@@ -349,7 +349,7 @@ const BacktestPage: React.FC = () => {
           {isLoadingResults ? (
             <div className="flex flex-col items-center justify-center h-64">
               <div className="w-10 h-10 border-3 border-cyan/20 border-t-cyan rounded-full animate-spin" />
-              <p className="mt-3 text-secondary text-sm">Loading results...</p>
+              <p className="mt-3 text-secondary text-sm">加载中...</p>
             </div>
           ) : results.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-center">
@@ -358,9 +358,9 @@ const BacktestPage: React.FC = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
-              <h3 className="text-base font-medium text-white mb-1.5">No Results</h3>
+              <h3 className="text-base font-medium text-white mb-1.5">暂无结果</h3>
               <p className="text-xs text-muted max-w-xs">
-                Run a backtest to evaluate historical analysis accuracy
+                执行回测以评估历史分析准确率
               </p>
             </div>
           ) : (
@@ -369,15 +369,15 @@ const BacktestPage: React.FC = () => {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-elevated text-left">
-                      <th className="px-3 py-2.5 text-xs font-medium text-secondary uppercase tracking-wider">Code</th>
-                      <th className="px-3 py-2.5 text-xs font-medium text-secondary uppercase tracking-wider">Date</th>
-                      <th className="px-3 py-2.5 text-xs font-medium text-secondary uppercase tracking-wider">Advice</th>
-                      <th className="px-3 py-2.5 text-xs font-medium text-secondary uppercase tracking-wider">Dir.</th>
-                      <th className="px-3 py-2.5 text-xs font-medium text-secondary uppercase tracking-wider">Outcome</th>
-                      <th className="px-3 py-2.5 text-xs font-medium text-secondary uppercase tracking-wider text-right">Return%</th>
-                      <th className="px-3 py-2.5 text-xs font-medium text-secondary uppercase tracking-wider text-center">SL</th>
-                      <th className="px-3 py-2.5 text-xs font-medium text-secondary uppercase tracking-wider text-center">TP</th>
-                      <th className="px-3 py-2.5 text-xs font-medium text-secondary uppercase tracking-wider">Status</th>
+                      <th className="px-3 py-2.5 text-xs font-medium text-secondary uppercase tracking-wider">代码</th>
+                      <th className="px-3 py-2.5 text-xs font-medium text-secondary uppercase tracking-wider">日期</th>
+                      <th className="px-3 py-2.5 text-xs font-medium text-secondary uppercase tracking-wider">建议</th>
+                      <th className="px-3 py-2.5 text-xs font-medium text-secondary uppercase tracking-wider">方向</th>
+                      <th className="px-3 py-2.5 text-xs font-medium text-secondary uppercase tracking-wider">结果</th>
+                      <th className="px-3 py-2.5 text-xs font-medium text-secondary uppercase tracking-wider text-right">收益率</th>
+                      <th className="px-3 py-2.5 text-xs font-medium text-secondary uppercase tracking-wider text-center">止损</th>
+                      <th className="px-3 py-2.5 text-xs font-medium text-secondary uppercase tracking-wider text-center">止盈</th>
+                      <th className="px-3 py-2.5 text-xs font-medium text-secondary uppercase tracking-wider">状态</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -426,7 +426,7 @@ const BacktestPage: React.FC = () => {
               </div>
 
               <p className="text-xs text-muted text-center mt-2">
-                {totalResults} result{totalResults !== 1 ? 's' : ''} total
+                共 {totalResults} 条结果
               </p>
             </div>
           )}

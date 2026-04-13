@@ -151,7 +151,7 @@ class StockAnalysisPipeline:
                 return False, "获取数据为空"
 
             # 保存到数据库
-            saved_count = self.db.save_daily_data(df, code, source_name)
+            saved_count = self.db.save_daily_data(df, code, source_name, name=stock_name)
             logger.info(f"{stock_name}({code}) 数据保存成功（来源: {source_name}，新增 {saved_count} 条）")
 
             return True, None

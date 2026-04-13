@@ -74,6 +74,9 @@ class StockDaily(Base):
     
     # 股票代码（如 600519, 000001）
     code = Column(String(10), nullable=False, index=True)
+
+    # 股票名称（如 贵州茅台）
+    name = Column(String(50), nullable=False, server_default='')
     
     # 交易日期
     date = Column(Date, nullable=False, index=True)
@@ -145,30 +148,30 @@ class NewsIntel(Base):
     query_id = Column(String(64), index=True)
 
     # 股票信息
-    code = Column(String(10), nullable=False, index=True)
-    name = Column(String(50))
+    code = Column(String(40), nullable=False, index=True)
+    name = Column(String(200))
 
     # 搜索上下文
-    dimension = Column(String(32), index=True)  # latest_news / risk_check / earnings / market_analysis / industry
-    query = Column(String(255))
-    provider = Column(String(32), index=True)
+    dimension = Column(String(128), index=True)  # latest_news / risk_check / earnings / market_analysis / industry
+    query = Column(String(1020))
+    provider = Column(String(128), index=True)
 
     # 新闻内容
-    title = Column(String(300), nullable=False)
+    title = Column(String(1200), nullable=False)
     snippet = Column(Text)
-    url = Column(String(1000), nullable=False)
-    source = Column(String(100))
+    url = Column(String(4000), nullable=False)
+    source = Column(String(400))
     published_date = Column(DateTime, index=True)
 
     # 入库时间
     fetched_at = Column(DateTime, default=datetime.now, index=True)
-    query_source = Column(String(32), index=True)  # bot/web/cli/system
-    requester_platform = Column(String(20))
-    requester_user_id = Column(String(64))
-    requester_user_name = Column(String(64))
-    requester_chat_id = Column(String(64))
-    requester_message_id = Column(String(64))
-    requester_query = Column(String(255))
+    query_source = Column(String(128), index=True)  # bot/web/cli/system
+    requester_platform = Column(String(80))
+    requester_user_id = Column(String(256))
+    requester_user_name = Column(String(256))
+    requester_chat_id = Column(String(256))
+    requester_message_id = Column(String(256))
+    requester_query = Column(String(1020))
 
     __table_args__ = (
         UniqueConstraint('url', name='uix_news_url'),
@@ -190,17 +193,17 @@ class AnalysisHistory(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     # 关联查询链路
-    query_id = Column(String(64), index=True)
+    query_id = Column(String(256), index=True)
 
     # 股票信息
-    code = Column(String(10), nullable=False, index=True)
-    name = Column(String(50))
-    report_type = Column(String(16), index=True)
+    code = Column(String(40), nullable=False, index=True)
+    name = Column(String(200))
+    report_type = Column(String(64), index=True)
 
     # 核心结论
     sentiment_score = Column(Integer)
-    operation_advice = Column(String(20))
-    trend_prediction = Column(String(50))
+    operation_advice = Column(String(80))
+    trend_prediction = Column(String(200))
     analysis_summary = Column(Text)
 
     # 详细数据
@@ -258,20 +261,20 @@ class BacktestResult(Base):
     )
 
     # 冗余字段，便于按股票筛选
-    code = Column(String(10), nullable=False, index=True)
+    code = Column(String(40), nullable=False, index=True)
     analysis_date = Column(Date, index=True)
 
     # 回测参数
     eval_window_days = Column(Integer, nullable=False, default=10)
-    engine_version = Column(String(16), nullable=False, default='v1')
+    engine_version = Column(String(64), nullable=False, default='v1')
 
     # 状态
-    eval_status = Column(String(16), nullable=False, default='pending')
+    eval_status = Column(String(64), nullable=False, default='pending')
     evaluated_at = Column(DateTime, default=datetime.now, index=True)
 
     # 建议快照（避免未来分析字段变化导致回测不可解释）
-    operation_advice = Column(String(20))
-    position_recommendation = Column(String(8))  # long/cash
+    operation_advice = Column(String(80))
+    position_recommendation = Column(String(32))  # long/cash
 
     # 价格与收益
     start_price = Column(Float)
@@ -281,23 +284,23 @@ class BacktestResult(Base):
     stock_return_pct = Column(Float)
 
     # 方向与结果
-    direction_expected = Column(String(16))  # up/down/flat/not_down
+    direction_expected = Column(String(64))  # up/down/flat/not_down
     direction_correct = Column(Boolean, nullable=True)
-    outcome = Column(String(16))  # win/loss/neutral
+    outcome = Column(String(64))  # win/loss/neutral
 
     # 目标价命中（仅 long 且配置了止盈/止损时有意义）
     stop_loss = Column(Float)
     take_profit = Column(Float)
     hit_stop_loss = Column(Boolean)
     hit_take_profit = Column(Boolean)
-    first_hit = Column(String(16))  # take_profit/stop_loss/ambiguous/neither/not_applicable
+    first_hit = Column(String(64))  # take_profit/stop_loss/ambiguous/neither/not_applicable
     first_hit_date = Column(Date)
     first_hit_trading_days = Column(Integer)
 
     # 模拟执行（long-only）
     simulated_entry_price = Column(Float)
     simulated_exit_price = Column(Float)
-    simulated_exit_reason = Column(String(24))  # stop_loss/take_profit/window_end/cash/ambiguous_stop_loss
+    simulated_exit_reason = Column(String(96))  # stop_loss/take_profit/window_end/cash/ambiguous_stop_loss
     simulated_return_pct = Column(Float)
 
     __table_args__ = (
@@ -318,11 +321,11 @@ class BacktestSummary(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
-    scope = Column(String(16), nullable=False, index=True)  # overall/stock
-    code = Column(String(16), index=True)
+    scope = Column(String(64), nullable=False, index=True)  # overall/stock
+    code = Column(String(64), index=True)
 
     eval_window_days = Column(Integer, nullable=False, default=10)
-    engine_version = Column(String(16), nullable=False, default='v1')
+    engine_version = Column(String(64), nullable=False, default='v1')
     computed_at = Column(DateTime, default=datetime.now, index=True)
 
     # 计数
@@ -373,8 +376,8 @@ class ConversationMessage(Base):
     __tablename__ = 'conversation_messages'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    session_id = Column(String(100), index=True, nullable=False)
-    role = Column(String(20), nullable=False)  # user, assistant, system
+    session_id = Column(String(400), index=True, nullable=False)
+    role = Column(String(80), nullable=False)  # user, assistant, system
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.now, index=True)
 
@@ -386,9 +389,9 @@ class LLMUsage(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     # 'analysis' | 'agent' | 'market_review'
-    call_type = Column(String(32), nullable=False, index=True)
-    model = Column(String(128), nullable=False)
-    stock_code = Column(String(16), nullable=True)
+    call_type = Column(String(128), nullable=False, index=True)
+    model = Column(String(512), nullable=False)
+    stock_code = Column(String(64), nullable=True)
     prompt_tokens = Column(Integer, nullable=False, default=0)
     completion_tokens = Column(Integer, nullable=False, default=0)
     total_tokens = Column(Integer, nullable=False, default=0)
@@ -985,10 +988,11 @@ class DatabaseManager:
             return list(results)
     
     def save_daily_data(
-        self, 
-        df: pd.DataFrame, 
+        self,
+        df: pd.DataFrame,
         code: str,
-        data_source: str = "Unknown"
+        data_source: str = "Unknown",
+        name: str = ""
     ) -> int:
         """
         保存日线数据到数据库
@@ -1033,6 +1037,9 @@ class DatabaseManager:
                         )
                     ).scalar_one_or_none()
                     
+                    # 优先从 DataFrame 取 name，其次用调用方传入的 name
+                    row_name = row.get('name') or name or ''
+
                     if existing:
                         # 更新现有记录
                         existing.open = row.get('open')
@@ -1047,11 +1054,14 @@ class DatabaseManager:
                         existing.ma20 = row.get('ma20')
                         existing.volume_ratio = row.get('volume_ratio')
                         existing.data_source = data_source
+                        if row_name:
+                            existing.name = row_name
                         existing.updated_at = datetime.now()
                     else:
                         # 创建新记录
                         record = StockDaily(
                             code=code,
+                            name=row_name,
                             date=row_date,
                             open=row.get('open'),
                             high=row.get('high'),

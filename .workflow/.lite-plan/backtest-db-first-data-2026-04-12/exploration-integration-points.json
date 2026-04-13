@@ -1,0 +1,47 @@
+{
+  "_metadata": {
+    "exploration_angle": "integration-points",
+    "exploration_index": 2,
+    "task_description": "检查回测与外部数据源的集成点，评估修改风险"
+  },
+  "key_files": [
+    {
+      "path": "data_provider/base.py",
+      "rationale": "DataFetcherManager 定义，回测通过它获取外部数据",
+      "role": "external-interface",
+      "relevance": 0.9,
+      "topic_relation": "外部数据源入口"
+    }
+  ],
+  "patterns": [
+    {
+      "name": "Lazy instantiation",
+      "description": "_try_fill_daily_data 每次调用都创建新的 DataFetcherManager()",
+      "code": "manager = DataFetcherManager()",
+      "actionable": false
+    }
+  ],
+  "integration_points": [
+    {
+      "location": "backtest_service.py:249",
+      "description": "DataFetcherManager() 实例化，每次 _try_fill_daily_data 调用时创建",
+      "type": "instantiation"
+    },
+    {
+      "location": "backtest_service.py:250-255",
+      "description": "manager.get_daily_data() 外部数据拉取",
+      "type": "external-call"
+    },
+    {
+      "location": "backtest_service.py:258",
+      "description": "self.db.save_daily_data() 保存到数据库",
+      "type": "persistence"
+    }
+  ],
+  "constraints": [],
+  "findings": {
+    "risk_assessment": "当前流程已经是 DB-first，无需修改核心逻辑。唯一可优化的是：对同一 code 的多个 candidate，_try_fill_daily_data 可能被重复调用。但这个优化是锦上添花而非必需。",
+    "recommendation": "不建议做大改动。回测数据获取流程设计合理，DB 优先 + 外部降级是正确的架构。"
+  },
+  "clarification_needs": []
+}

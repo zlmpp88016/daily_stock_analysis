@@ -1,0 +1,75 @@
+{
+  "_metadata": {
+    "exploration_angle": "dataflow",
+    "exploration_index": 1,
+    "task_description": "检查回测数据获取流程，确认是否优先从数据库获取数据"
+  },
+  "key_files": [
+    {
+      "path": "src/services/backtest_service.py",
+      "rationale": "回测主流程，包含数据获取和降级策略",
+      "role": "orchestrator",
+      "relevance": 1.0,
+      "key_code": [
+        "def run_backtest(): line 30-212",
+        "def _try_fill_daily_data(): line 243-260"
+      ],
+      "topic_relation": "回测入口，控制数据获取优先级"
+    },
+    {
+      "path": "src/repositories/stock_repo.py",
+      "rationale": "股票数据访问层，get_start_daily/get_forward_bars 查询数据库",
+      "role": "data-access",
+      "relevance": 1.0,
+      "key_code": [
+        "def get_start_daily(): line 143-152",
+        "def get_forward_bars(): line 154-163"
+      ],
+      "topic_relation": "数据库查询入口"
+    },
+    {
+      "path": "src/repositories/backtest_repo.py",
+      "rationale": "回测数据访问层，获取 candidates 和保存结果",
+      "role": "data-access",
+      "relevance": 0.8,
+      "key_code": [
+        "def get_candidates(): line 27-58"
+      ],
+      "topic_relation": "回测候选记录获取"
+    },
+    {
+      "path": "src/core/backtest_engine.py",
+      "rationale": "回测引擎核心逻辑，evaluate_single 接收数据",
+      "role": "engine",
+      "relevance": 0.6,
+      "topic_relation": "回测计算逻辑，不涉及数据获取"
+    }
+  ],
+  "patterns": [
+    {
+      "name": "DB-first with fallback",
+      "description": "回测流程采用 DB 优先 + 外部降级策略",
+      "code": "get_start_daily → DB | None → _try_fill_daily_data → DB retry",
+      "actionable": true
+    }
+  ],
+  "integration_points": [
+    {
+      "location": "backtest_service.py:92-126",
+      "description": "核心数据获取循环：先查DB，不够则补外部数据",
+      "type": "data-retrieval"
+    },
+    {
+      "location": "backtest_service.py:243-260",
+      "description": "_try_fill_daily_data: DataFetcherManager 外部数据拉取",
+      "type": "fallback"
+    }
+  ],
+  "constraints": [],
+  "findings": {
+    "current_behavior": "回测已优先从数据库获取数据。get_start_daily() 和 get_forward_bars() 都直接查 stock_daily 表。_try_fill_daily_data() 仅在数据库无数据时作为降级策略调用外部数据源。",
+    "potential_issue": "同一 code 的多个 analysis candidate 在数据库缺失数据时会重复调用 _try_fill_daily_data()，每次创建新的 DataFetcherManager 实例。但这是 edge case，正常情况下数据库已有足够数据。",
+    "optimization_opportunity": "可在 run_backtest 循环前按 touched_codes 批量预检查数据完整性，避免循环内逐条降级。但风险低、收益有限。"
+  },
+  "clarification_needs": []
+}

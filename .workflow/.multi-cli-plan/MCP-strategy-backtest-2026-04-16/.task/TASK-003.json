@@ -1,0 +1,106 @@
+{
+  "id": "TASK-003",
+  "title": "Backend: Rule Engine",
+  "description": "Implement rule expression parser and evaluator in src/strategy_backtest/rules.py. Support cross_over, cross_under, gt, lt, and, or operators. Parse rule expressions into an AST, evaluate against indicator columns in DataFrame, return boolean signal series for buy/sell decisions.",
+  "type": "feature",
+  "priority": "critical",
+  "effort": "medium",
+  "action": "Create",
+  "scope": "src/strategy_backtest/rules.py",
+  "depends_on": ["TASK-002"],
+  "convergence": {
+    "criteria": [
+      "parse_rule('cross_over(ma_5, ma_20)') returns structured AST node",
+      "parse_rule('ma_5 > ma_20') returns comparison AST node with gt operator",
+      "evaluate_rules(df, ['cross_over(ma_5, ma_20)']) returns boolean Series with True on crossover days",
+      "evaluate_rules supports and/or composition: 'cross_over(ma_5, ma_20) and macd_dif > macd_dea'",
+      "cross_over(A, B) returns True on day i where A[i-1] <= B[i-1] AND A[i] > B[i]",
+      "cross_under(A, B) returns True on day i where A[i-1] >= B[i-1] AND A[i] < B[i]",
+      "gt/lt operators support indicator vs indicator, indicator vs constant comparisons",
+      "Multi-rule evaluation: buy_rules list is AND-combined (all must be True for signal)",
+      "Edge case: first row of data has no prior values for cross_over/cross_under (returns False)"
+    ],
+    "verification": "python -m pytest tests/test_strategy_rules.py -v",
+    "definition_of_done": "Rule engine correctly parses and evaluates all 6 operators with proper edge case handling"
+  },
+  "files": [
+    {
+      "path": "src/strategy_backtest/rules.py",
+      "action": "create",
+      "target": "module",
+      "change": "Create rule engine with parse_rule, evaluate_rule, evaluate_rules functions supporting cross_over, cross_under, gt, lt, and, or",
+      "conflict_risk": "low"
+    }
+  ],
+  "implementation": [
+    {
+      "step": 1,
+      "title": "Design AST node structure",
+      "description": "Define dataclasses for AST nodes: ComparisonNode (gt/lt), CrossoverNode (cross_over/cross_under), LogicalNode (and/or), ValueNode (column reference or constant)",
+      "actions": ["Define AST node dataclasses", "Design parser grammar"]
+    },
+    {
+      "step": 2,
+      "title": "Implement parser",
+      "description": "Parse rule expression strings into AST. Handle function calls (cross_over, cross_under), operators (>, <, and, or), column references, and numeric constants.",
+      "modification_points": ["rules.py: parse_rule function"]
+    },
+    {
+      "step": 3,
+      "title": "Implement evaluator",
+      "description": "Evaluate AST against DataFrame. Crossover detection uses shifted Series comparison. Logical operators use pandas bitwise operators.",
+      "modification_points": ["rules.py: evaluate_rule, evaluate_rules functions"]
+    },
+    {
+      "step": 4,
+      "title": "Handle edge cases",
+      "description": "First-row handling for crossover (no prior value), NaN propagation from indicators, empty rule list",
+      "actions": ["Test first row returns False for crossover", "Test NaN columns handled gracefully"]
+    }
+  ],
+  "reference": {
+    "pattern": "Simple recursive descent parser or regex-based parser for rule expressions",
+    "files": ["src/stock_analyzer.py"],
+    "examples": "PRD section 7 buy_rules/sell_rules JSON examples: 'cross_over(ma5, ma20)', 'macd.dif > macd.dea', 'close < boll.lower'"
+  },
+  "rationale": {
+    "chosen_approach": "Custom lightweight parser with AST representation. Recursive evaluation against pandas Series.",
+    "alternatives_considered": ["Full expression language (eval-based)", "Predefined rule templates only"],
+    "decision_factors": ["Safety (no eval)", "Flexibility (and/or composition)", "Simplicity (6 operators only)"],
+    "tradeoffs": "Limited to 6 operators, but covers all PRD requirements without complexity"
+  },
+  "test": {
+    "unit": [
+      "test_parse_crossover: verify cross_over AST structure",
+      "test_parse_comparison: verify gt/lt AST structure",
+      "test_parse_logical: verify and/or AST structure",
+      "test_evaluate_crossover: verify crossover detection on synthetic data",
+      "test_evaluate_crossunder: verify crossunder detection",
+      "test_evaluate_gt_lt: verify comparison with constants and columns",
+      "test_evaluate_and_or: verify logical composition",
+      "test_multi_rule_and: verify multi-rule AND combination",
+      "test_first_row_edge_case: verify crossover returns False on first row",
+      "test_nan_handling: verify NaN columns don't crash evaluator"
+    ],
+    "success_metrics": ["All 6 operators produce correct boolean signals", "Crossover detected within 1-day accuracy"]
+  },
+  "meta": {
+    "agent": "@codex",
+    "module": "backend",
+    "execution_config": {
+      "method": "cli",
+      "cli_tool": "codex",
+      "enable_resume": true
+    }
+  },
+  "cli_execution_id": "MCP-strategy-backtest-2026-04-16-TASK-003",
+  "cli_execution": {
+    "strategy": "fork",
+    "resume_from": "MCP-strategy-backtest-2026-04-16-TASK-002"
+  },
+  "commit": {
+    "type": "feat",
+    "scope": "strategy-backtest",
+    "message_template": "feat(strategy-backtest): add rule engine with cross_over/cross_under/gt/lt/and/or support"
+  }
+}

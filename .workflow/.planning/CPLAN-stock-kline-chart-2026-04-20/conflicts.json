@@ -1,0 +1,15 @@
+{
+  "detected_at": "2026-04-20",
+  "total_tasks": 10,
+  "total_agents": 2,
+  "conflicts": [
+    {
+      "type": "strategy_conflict",
+      "severity": "medium",
+      "tasks_involved": ["TASK-002", "TASK-003"],
+      "agents_involved": ["backend-api", "frontend-chart"],
+      "description": "API endpoint path mismatch: backend plans /api/v1/kline/{code} but frontend TASK-102 references /api/v1/stock-chart/{code}",
+      "suggested_resolution": "Align frontend API calls to use backend's /api/v1/kline/{code}. Frontend TASK-102 must use the backend-defined endpoint path."
+    }
+  ]
+}

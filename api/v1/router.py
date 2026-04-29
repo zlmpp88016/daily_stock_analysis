@@ -11,7 +11,8 @@ API v1 路由聚合
 
 from fastapi import APIRouter
 
-from api.v1.endpoints import analysis, auth, history, stocks, backtest, system_config, agent, usage
+from api.v1.endpoints import analysis, auth, history, stocks, backtest, system_config, agent, usage, strategy_backtest
+from api.v1.endpoints import kline
 
 # 创建 v1 版本主路由
 router = APIRouter(prefix="/api/v1")
@@ -53,6 +54,12 @@ router.include_router(
 )
 
 router.include_router(
+    strategy_backtest.router,
+    prefix="/strategy-backtest",
+    tags=["StrategyBacktest"]
+)
+
+router.include_router(
     system_config.router,
     prefix="/system",
     tags=["SystemConfig"]
@@ -62,4 +69,10 @@ router.include_router(
     usage.router,
     prefix="/usage",
     tags=["Usage"]
+)
+
+router.include_router(
+    kline.router,
+    prefix="/kline",
+    tags=["Kline"]
 )

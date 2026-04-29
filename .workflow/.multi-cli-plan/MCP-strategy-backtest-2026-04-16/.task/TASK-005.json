@@ -1,0 +1,144 @@
+{
+  "id": "TASK-005",
+  "title": "Backend: Service + Repository + API",
+  "description": "Wire the backend stack: create Repository (strategy_backtest_repo.py) for DB persistence, Service (strategy_backtest_service.py) to orchestrate data fetch -> indicators -> engine -> persist, API schemas (api/v1/schemas/strategy_backtest.py) and endpoints (api/v1/endpoints/strategy_backtest.py) with POST /run, GET /history, GET /{run_id}. Register router in api/v1/router.py.",
+  "type": "feature",
+  "priority": "critical",
+  "effort": "large",
+  "action": "Create",
+  "scope": "src/services/strategy_backtest_service.py, src/repositories/strategy_backtest_repo.py, api/v1/schemas/strategy_backtest.py, api/v1/endpoints/strategy_backtest.py, api/v1/router.py",
+  "depends_on": ["TASK-001", "TASK-004"],
+  "convergence": {
+    "criteria": [
+      "POST /api/v1/strategy-backtest/run accepts StrategyBacktestRequest, runs backtest, persists results, returns StrategyBacktestRunResponse",
+      "GET /api/v1/strategy-backtest/history?code={code}&limit={limit} returns list of StrategyBacktestRunResponse",
+      "GET /api/v1/strategy-backtest/{run_id} returns full run detail with trades and equity curve",
+      "strategy_backtest_repo.py implements: save_run(), get_run(), get_history(), save_trades(), save_equity()",
+      "strategy_backtest_service.py implements: run_backtest() orchestrating data fetch -> indicator calc -> engine run -> persist",
+      "Service uses DataFetcherManager for historical data access (existing pattern)",
+      "Router registered in api/v1/router.py under /api/v1/strategy-backtest prefix",
+      "API schemas in api/v1/schemas/strategy_backtest.py follow existing backtest.py schema patterns"
+    ],
+    "verification": "curl -X POST http://localhost:8000/api/v1/strategy-backtest/run -d '{\"code\":\"600519\",\"start_date\":\"2024-01-01\",\"end_date\":\"2024-12-31\",\"initial_cash\":100000,\"indicators\":{\"ma\":{\"periods\":[5,20]}}}'; curl http://localhost:8000/api/v1/strategy-backtest/history",
+    "definition_of_done": "All 3 API endpoints functional and returning correct JSON responses"
+  },
+  "files": [
+    {
+      "path": "src/repositories/strategy_backtest_repo.py",
+      "action": "create",
+      "target": "module",
+      "change": "Create repository with CRUD operations for strategy_backtest_runs/trades/equity tables, following backtest_repo.py pattern",
+      "conflict_risk": "low"
+    },
+    {
+      "path": "src/services/strategy_backtest_service.py",
+      "action": "create",
+      "target": "module",
+      "change": "Create service orchestrating: fetch data via DataFetcherManager -> calc indicators -> run engine -> persist results, following backtest_service.py pattern",
+      "conflict_risk": "low"
+    },
+    {
+      "path": "api/v1/schemas/strategy_backtest.py",
+      "action": "create",
+      "target": "module",
+      "change": "Create FastAPI Pydantic schemas for request/response models following existing backtest.py patterns",
+      "conflict_risk": "low"
+    },
+    {
+      "path": "api/v1/endpoints/strategy_backtest.py",
+      "action": "create",
+      "target": "module",
+      "change": "Create FastAPI router with POST /run, GET /history, GET /{run_id} endpoints following existing endpoint patterns",
+      "conflict_risk": "low"
+    },
+    {
+      "path": "api/v1/router.py",
+      "action": "modify",
+      "target": "router",
+      "change": "Register strategy_backtest router with /api/v1/strategy-backtest prefix, following existing router registration pattern",
+      "conflict_risk": "low"
+    }
+  ],
+  "implementation": [
+    {
+      "step": 1,
+      "title": "Study existing patterns",
+      "description": "Read backtest_repo.py, backtest_service.py, api/v1/endpoints/backtest.py, api/v1/schemas/backtest.py, api/v1/router.py to understand conventions",
+      "actions": ["Read all 5 reference files", "Note dependency injection patterns", "Note session/DB handling patterns"]
+    },
+    {
+      "step": 2,
+      "title": "Create Repository",
+      "description": "Implement strategy_backtest_repo.py with save_run, get_run, get_history, save_trades, save_equity methods. Follow backtest_repo.py pattern for session management.",
+      "modification_points": ["src/repositories/strategy_backtest_repo.py: new file"]
+    },
+    {
+      "step": 3,
+      "title": "Create API Schemas",
+      "description": "Define FastAPI Pydantic schemas in api/v1/schemas/strategy_backtest.py. Import from src/strategy_backtest/models.py where possible, add API-specific response wrappers.",
+      "modification_points": ["api/v1/schemas/strategy_backtest.py: new file"]
+    },
+    {
+      "step": 4,
+      "title": "Create Service",
+      "description": "Implement strategy_backtest_service.py: run_backtest(code, start_date, end_date, initial_cash, indicators, buy_rules, sell_rules, commission_rate, slippage_rate). Use DataFetcherManager for data, indicators.py for calc, engine.py for simulation, repo for persist.",
+      "modification_points": ["src/services/strategy_backtest_service.py: new file"]
+    },
+    {
+      "step": 5,
+      "title": "Create API Endpoints",
+      "description": "Implement api/v1/endpoints/strategy_backtest.py with 3 endpoints: POST /run, GET /history, GET /{run_id}. Follow existing backtest.py endpoint patterns.",
+      "modification_points": ["api/v1/endpoints/strategy_backtest.py: new file"]
+    },
+    {
+      "step": 6,
+      "title": "Register Router",
+      "description": "Add strategy_backtest router to api/v1/router.py with prefix /api/v1/strategy-backtest",
+      "modification_points": ["api/v1/router.py: add import and include_router"]
+    }
+  ],
+  "reference": {
+    "pattern": "Repository -> Service -> API layered architecture pattern",
+    "files": ["src/repositories/backtest_repo.py", "src/services/backtest_service.py", "api/v1/endpoints/backtest.py", "api/v1/schemas/backtest.py", "api/v1/router.py", "data_provider/base.py"],
+    "examples": "Mirror existing backtest module architecture with strategy_backtest namespace"
+  },
+  "rationale": {
+    "chosen_approach": "Mirror existing backtest module architecture with strategy_backtest namespace to maintain consistency",
+    "alternatives_considered": ["Flat service layer without repository", "Single file with all layers"],
+    "decision_factors": ["Consistency with existing codebase", "Separation of concerns", "Testability of each layer"],
+    "tradeoffs": "More files to maintain, but each file is focused and testable"
+  },
+  "test": {
+    "unit": [
+      "test_repo_save_and_get_run: save a run and retrieve it",
+      "test_repo_get_history: verify history query returns runs in order",
+      "test_service_run_backtest: end-to-end service test with mocked DataFetcherManager"
+    ],
+    "integration": [
+      "test_api_run_endpoint: POST /run returns 200 with valid result",
+      "test_api_history_endpoint: GET /history returns list",
+      "test_api_detail_endpoint: GET /{run_id} returns full detail"
+    ],
+    "manual_checks": ["Verify API returns correct JSON structure matching PRD", "Verify error handling for invalid inputs"],
+    "success_metrics": ["All 3 endpoints return 200 status", "Response JSON matches PRD section 7 structure"]
+  },
+  "meta": {
+    "agent": "@codex",
+    "module": "backend",
+    "execution_config": {
+      "method": "cli",
+      "cli_tool": "codex",
+      "enable_resume": true
+    }
+  },
+  "cli_execution_id": "MCP-strategy-backtest-2026-04-16-TASK-005",
+  "cli_execution": {
+    "strategy": "merge_fork",
+    "merge_from": ["MCP-strategy-backtest-2026-04-16-TASK-001", "MCP-strategy-backtest-2026-04-16-TASK-004"]
+  },
+  "commit": {
+    "type": "feat",
+    "scope": "strategy-backtest",
+    "message_template": "feat(strategy-backtest): add service, repository, API endpoints for strategy backtest"
+  }
+}

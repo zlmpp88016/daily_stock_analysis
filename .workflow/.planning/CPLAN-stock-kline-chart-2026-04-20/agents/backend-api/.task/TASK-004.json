@@ -1,0 +1,40 @@
+{
+  "id": "TASK-004",
+  "title": "Create chip distribution API endpoint",
+  "scope": "api/v1/endpoints/",
+  "action": "Create",
+  "description": "Add chip distribution endpoint to kline.py router: GET /api/v1/kline/{code}/chip-distribution that calls DataFetcherManager.get_chip_distribution() and returns ChipDistributionResponse. This endpoint fetches from external API (not database).",
+  "files": [
+    {
+      "path": "api/v1/endpoints/kline.py",
+      "action": "update",
+      "target": "chip distribution endpoint",
+      "change": "Add GET /{code}/chip-distribution endpoint calling DataFetcherManager.get_chip_distribution()"
+    }
+  ],
+  "implementation": [
+    "Add import for DataFetcherManager from data_provider.base",
+    "Create get_fetcher_manager() dependency function that returns DataFetcherManager instance (follow existing pattern in src/agent/tools/data_tools.py)",
+    "Define GET /{code}/chip-distribution endpoint with Path param code:str",
+    "Call fetcher_manager.get_chip_distribution(code), handle None return as 404",
+    "Return ChipDistributionResponse constructed from ChipDistribution object fields",
+    "Handle exceptions with same error pattern: ValueError->400, Exception->500"
+  ],
+  "reference": {
+    "pattern": "DataFetcherManager singleton with circuit breaker for external API calls",
+    "files": ["data_provider/base.py", "data_provider/realtime_types.py", "src/agent/tools/data_tools.py"],
+    "examples": "Follow _handle_get_chip_distribution() in data_tools.py for how ChipDistribution is accessed. ChipDistribution fields: code, profit_ratio, avg_cost, cost_90_low/high, concentration_90, cost_70_low/high, concentration_70"
+  },
+  "convergence": {
+    "criteria": [
+      "Endpoint responds to GET /api/v1/kline/{code}/chip-distribution",
+      "Returns 200 with ChipDistributionResponse JSON",
+      "Returns 404 when chip data is unavailable (external API returns None)",
+      "Returns 500 with error detail for service failures",
+      "DataFetcherManager circuit breaker is respected (no manual timeout handling needed)"
+    ]
+  },
+  "depends_on": ["TASK-001", "TASK-003"],
+  "cli_execution_id": "CPLAN-stock-kline-chart-2026-04-20-TASK-004",
+  "cli_execution": { "strategy": "resume", "resume_from": "CPLAN-stock-kline-chart-2026-04-20-TASK-003" }
+}

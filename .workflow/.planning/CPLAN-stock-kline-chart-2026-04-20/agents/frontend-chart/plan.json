@@ -1,0 +1,51 @@
+{
+  "summary": "Frontend K-line chart integration plan: install klinecharts library, create type definitions, API layer, React wrapper component, chart panel with period/indicator controls, and integrate into StrategyBacktestPage as a new tab.",
+  "approach": "Bottom-up layered approach: (1) Foundation - install dependency and define types, (2) Data layer - API client for backend K-line endpoint, (3) Core component - React wrapper around klinecharts imperative API, (4) Feature component - StockChartPanel with toolbar, period switching, indicator toggles, (5) Integration - add tab navigation to StrategyBacktestPage right panel. Each layer builds on the previous, enabling parallel work on types+API (TASK-101 fork) before merging into the panel component.",
+  "task_ids": ["TASK-101", "TASK-102", "TASK-103", "TASK-104", "TASK-105"],
+  "task_count": 5,
+  "estimated_time": "150 minutes",
+  "recommended_execution": "Agent",
+  "complexity": "Medium",
+  "design_decisions": [
+    {
+      "decision": "Use klinecharts instead of recharts for K-line rendering",
+      "rationale": "klinecharts is purpose-built for financial candlestick charts with built-in indicators (MACD, KDJ, BOLL, VOL), ~40KB gzipped with zero dependencies. recharts requires manual candlestick implementation.",
+      "tradeoff": "Adds a new charting library alongside recharts, but the specialized capability justifies it"
+    },
+    {
+      "decision": "Tab-based integration rather than separate page",
+      "rationale": "StrategyBacktestPage already has the stock code input field and left-right split layout. Adding a tab in the right panel reuses the existing code input and keeps all stock-related functionality together.",
+      "tradeoff": "Slightly increases page complexity but avoids route duplication and provides better UX flow"
+    },
+    {
+      "decision": "Thin React wrapper around klinecharts imperative API",
+      "rationale": "klinecharts is framework-agnostic with an imperative API (init/dispose/applyNewData). A thin wrapper using useRef/useEffect is the standard React integration pattern for imperative libraries.",
+      "tradeoff": "Wrapper needs careful lifecycle management but avoids unnecessary abstraction layers"
+    }
+  ],
+  "_metadata": {
+    "timestamp": "2026-04-20T00:00:00.000Z",
+    "source": "cli-lite-planning-agent",
+    "plan_type": "feature",
+    "schema_version": "2.0",
+    "planning_mode": "agent-based",
+    "exploration_angles": ["frontend-chart"],
+    "focus_area": "frontend-chart",
+    "duration_seconds": 0,
+    "quality_check": {
+      "status": "passed",
+      "dimensions": {
+        "completeness": "pass",
+        "task_granularity": "pass",
+        "dependencies": "pass",
+        "convergence_criteria": "pass",
+        "implementation_steps": "pass",
+        "constraint_compliance": "pass"
+      },
+      "critical_issues": 0,
+      "minor_issues": 0,
+      "recommendation": "PASS",
+      "checked_at": "2026-04-20T00:00:00.000Z"
+    }
+  }
+}

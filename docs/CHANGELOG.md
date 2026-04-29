@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- Strategy backtest backend API: add `/api/v1/strategy-backtest/run`, `/history`, and `/{run_id}` with persisted run, trade, and equity records
 - feat(search): add SearXNG support as quota-free fallback (Fixes #550)
 - PostgreSQL config support (DATABASE_URL/POSTGRES_*) and migration guide
 - Historical stock-daily CSV importer with staging/manifest resume flow, single-file import support, pre-insert hook support, and MA backfill runbook

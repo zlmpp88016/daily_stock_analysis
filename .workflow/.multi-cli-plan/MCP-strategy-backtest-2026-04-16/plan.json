@@ -1,0 +1,160 @@
+{
+  "summary": "Implement a customizable technical indicator strategy backtest system: MA/MACD/KDJ/BOLL indicator engine, cross_over/cross_under/gt/lt/and/or rule DSL, T+1 backtest engine with single-position long-only model, full backend stack (models/repo/service/API), and frontend page with config form, equity curve chart, and trade table. 9 tasks split across Codex (backend T1-T6) and Gemini (frontend T7-T9).",
+  "approach": "Layered architecture mirroring existing backtest module with new strategy_backtest namespace. Backend-first execution enabling parallel frontend work. Engine -> Service -> Repository -> API layered separation. Pure-function indicator and rule engines for testability. Frontend follows existing BacktestPage patterns with Tailwind dark theme.",
+  "task_ids": [
+    "TASK-001",
+    "TASK-002",
+    "TASK-003",
+    "TASK-004",
+    "TASK-005",
+    "TASK-006",
+    "TASK-007",
+    "TASK-008",
+    "TASK-009"
+  ],
+  "task_count": 9,
+  "complexity": "High",
+  "estimated_time": "8-12 hours",
+  "recommended_execution": "Phased",
+  "data_flow": {
+    "diagram": "DataFetcherManager -> DataFrame -> IndicatorEngine -> EnrichedDataFrame -> RuleEngine -> Signals -> BacktestEngine -> Trades/Equity/Summary -> Repository -> API -> Frontend",
+    "stages": [
+      {
+        "stage": "Data Fetch",
+        "input": "stock code, date range",
+        "output": "OHLCV DataFrame",
+        "component": "DataFetcherManager (existing)",
+        "transformations": ["Query local DB", "Fetch missing data from external source"]
+      },
+      {
+        "stage": "Indicator Calculation",
+        "input": "OHLCV DataFrame + indicator config",
+        "output": "DataFrame with indicator columns (ma_5, macd_dif, kdj_k, boll_upper, etc.)",
+        "component": "src/strategy_backtest/indicators.py",
+        "transformations": ["MA rolling mean", "MACD ewm", "KDJ stochastic", "BOLL stddev bands"]
+      },
+      {
+        "stage": "Rule Evaluation",
+        "input": "Enriched DataFrame + rule expressions",
+        "output": "Boolean signal Series (buy_signal, sell_signal)",
+        "component": "src/strategy_backtest/rules.py",
+        "transformations": ["Parse rule AST", "Evaluate crossover/comparison", "Combine with and/or"]
+      },
+      {
+        "stage": "Backtest Simulation",
+        "input": "Signals + OHLCV + config (cash, commission, slippage)",
+        "output": "BacktestResult (trades list, equity curve, summary stats)",
+        "component": "src/strategy_backtest/engine.py",
+        "transformations": ["T+1 signal->execution", "Commission/slippage deduction", "Equity tracking", "Statistics calculation"]
+      },
+      {
+        "stage": "Persistence",
+        "input": "BacktestResult",
+        "output": "DB records (run, trades, equity)",
+        "component": "src/repositories/strategy_backtest_repo.py",
+        "transformations": ["ORM insert"]
+      },
+      {
+        "stage": "API Response",
+        "input": "DB records",
+        "output": "JSON response",
+        "component": "api/v1/endpoints/strategy_backtest.py",
+        "transformations": ["Pydantic serialization"]
+      },
+      {
+        "stage": "Frontend Display",
+        "input": "JSON response",
+        "output": "UI (config form, metric cards, equity chart, trade table)",
+        "component": "apps/dsa-web/src/pages/StrategyBacktestPage.tsx + components",
+        "transformations": ["React state management", "Recharts rendering", "Table sorting"]
+      }
+    ],
+    "dependencies": ["DataFetcherManager (existing)", "pandas (existing)", "recharts (npm, may need install)"]
+  },
+  "design_decisions": [
+    {
+      "decision": "Independent module separate from existing AI backtest",
+      "rationale": "Different semantic model: strategy rule execution vs AI suggestion evaluation. Separate tables and code prevent confusion and maintain backward compatibility.",
+      "tradeoff": "Some code pattern duplication with existing backtest module",
+      "alternatives": ["Extend existing backtest tables", "Merge into BacktestService"]
+    },
+    {
+      "decision": "Pure-function indicator and rule engines (no state, no DB)",
+      "rationale": "Maximum testability with synthetic data, no external dependencies in core logic, easy to reason about correctness.",
+      "tradeoff": "Service layer must orchestrate data flow, slightly more wiring code"
+    },
+    {
+      "decision": "T+1 execution model (signal day T, execution day T+1 at open price)",
+      "rationale": "Avoids look-ahead bias, matches realistic trading simulation, simple to understand and debug.",
+      "tradeoff": "Cannot model intraday execution or T+0 scenarios in MVP"
+    },
+    {
+      "decision": "Custom rule DSL with 6 operators instead of natural language",
+      "rationale": "Deterministic evaluation, no LLM instability for rule interpretation, covers all PRD requirements.",
+      "tradeoff": "Users must learn DSL syntax, no natural language input in MVP"
+    },
+    {
+      "decision": "Backend assigned to Codex, Frontend assigned to Gemini",
+      "rationale": "Parallel execution by specialized tools. Backend tasks are self-contained with clear interfaces. Frontend can start once API contract is defined.",
+      "tradeoff": "Requires clear API contract upfront, coordination on schema changes"
+    },
+    {
+      "decision": "No alembic migrations - use Base.metadata.create_all",
+      "rationale": "Consistent with existing project convention. Tables created on app startup.",
+      "tradeoff": "No schema migration support, but acceptable for new feature with no existing data"
+    }
+  ],
+  "shared_context": {
+    "tech_stack": ["Python/FastAPI backend", "React/TypeScript frontend", "Tailwind CSS dark theme", "recharts for charts", "SQLAlchemy ORM", "Pydantic schemas", "pandas for data"],
+    "conventions": [
+      "Repository pattern in src/repositories/",
+      "Service pattern in src/services/",
+      "Pydantic schemas in api/v1/schemas/",
+      "FastAPI endpoints in api/v1/endpoints/",
+      "Router registration in api/v1/router.py",
+      "Frontend types in apps/dsa-web/src/types/",
+      "Frontend API client in apps/dsa-web/src/api/",
+      "Frontend pages in apps/dsa-web/src/pages/",
+      "Chinese UI labels",
+      "unittest for backend tests",
+      "No alembic - Base.metadata.create_all for tables"
+    ]
+  },
+  "_metadata": {
+    "timestamp": "2026-04-16T00:00:00.000Z",
+    "source": "cli-lite-planning-agent",
+    "planning_mode": "agent-based",
+    "plan_type": "feature",
+    "schema_version": "2.0",
+    "exploration_angles": ["backend", "frontend"],
+    "duration_seconds": 120,
+    "session_id": "MCP-strategy-backtest-2026-04-16",
+    "executor_assignments": {
+      "codex": {
+        "tasks": ["TASK-001", "TASK-002", "TASK-003", "TASK-004", "TASK-005", "TASK-006"],
+        "scope": "backend"
+      },
+      "gemini": {
+        "tasks": ["TASK-007", "TASK-008", "TASK-009"],
+        "scope": "frontend"
+      }
+    },
+    "execution_flow": "TASK-001 + TASK-002 (parallel) -> TASK-003 -> TASK-004 -> TASK-005 + TASK-006 (parallel) -> TASK-007 -> TASK-008 -> TASK-009",
+    "quality_check": {
+      "status": "passed",
+      "checked_at": "2026-04-16T04:01:00.000Z",
+      "method": "manual-validation",
+      "dimensions": {
+        "completeness": "PASS - 17 PRD requirements covered across 9 tasks",
+        "granularity": "PASS - All tasks have 2+ impl steps (range 4-6), 1+ files (range 1-5), 6+ convergence criteria",
+        "dependencies": "PASS - No circular deps, execution flow matches: T1+T2(parallel)->T3->T4->T5+T6(parallel)->T7->T8->T9",
+        "convergence_criteria": "PASS - No vague criteria found, all quantified and testable",
+        "implementation_steps": "PASS - All tasks have 4+ implementation steps",
+        "constraint_compliance": "PASS - All 8 constraints met (no alembic, independent module, T+1, long-only, executor assignments)"
+      },
+      "critical_issues": 0,
+      "minor_issues": 0,
+      "recommendation": "PASS"
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "id": "TASK-104",
+  "title": "Create StockChartPanel with period selector and indicator toggles",
+  "scope": "apps/dsa-web/src/components/stock-chart/",
+  "action": "Create",
+  "description": "Create the main StockChartPanel container component that provides a complete stock chart experience: stock code input, period switching (daily/weekly/monthly), indicator toggle buttons (MACD/KDJ/BOLL/VOL), and integrates KLineChart component. Manages data fetching state.",
+  "files": [
+    {
+      "path": "apps/dsa-web/src/components/stock-chart/StockChartPanel.tsx",
+      "action": "create",
+      "target": "new file",
+      "change": "Create full stock chart panel with toolbar (code input, period tabs, indicator toggles) and KLineChart area"
+    },
+    {
+      "path": "apps/dsa-web/src/components/stock-chart/index.ts",
+      "action": "modify",
+      "target": "exports",
+      "change": "Add StockChartPanel export to barrel file"
+    }
+  ],
+  "implementation": [
+    "Create StockChartPanel.tsx with StockChartPanelProps: defaultCode?: string, className?: string",
+    "Implement internal state: code (string), period (StockChartPeriod), enabledIndicators (Set<StockChartIndicator>), chartData (StockChartKlineItem[]), isLoading, error",
+    "Build toolbar section with: stock code input field, period tab group (日K/周K/月K), indicator toggle buttons (MACD, KDJ, BOLL, VOL) using Badge component for toggles",
+    "Implement fetchKlineData callback: call stockChartApi.getKlineData({code, period, startDate, endDate}), update chartData state",
+    "Auto-fetch data when code or period changes (useEffect), with debounce on code input",
+    "Render KLineChart component with chartData and enabledIndicators, show loading spinner and error states using existing Card/Badge/Loading patterns",
+    "Update index.ts to export StockChartPanel"
+  ],
+  "reference": {
+    "pattern": "Container component pattern from StrategyBacktestPage.tsx (form state + API calls + error handling)",
+    "files": [
+      "apps/dsa-web/src/components/strategy-backtest/EquityCurve.tsx",
+      "apps/dsa-web/src/pages/StrategyBacktestPage.tsx",
+      "apps/dsa-web/src/components/common/Badge.tsx",
+      "apps/dsa-web/src/components/common/Card.tsx"
+    ],
+    "examples": "Follow StrategyBacktestPage.tsx state management pattern: useState for form + loading + error, async fetch with try/catch"
+  },
+  "convergence": {
+    "criteria": [
+      "StockChartPanel renders stock code input, period tabs (日K/周K/月K), indicator toggle buttons (MACD/KDJ/BOLL/VOL)",
+      "Period switching triggers data re-fetch and chart re-render",
+      "Indicator toggles add/remove chart overlays and sub-panes",
+      "Loading state shows spinner (consistent with StrategyBacktestPage pattern)",
+      "Error state shows ApiErrorAlert component",
+      "Default: daily period, MACD+VOL enabled"
+    ]
+  },
+  "depends_on": ["TASK-102", "TASK-103"],
+  "cli_execution_id": "CPLAN-stock-kline-chart-2026-04-20-TASK-104",
+  "cli_execution": { "strategy": "merge_fork", "merge_from": ["CPLAN-stock-kline-chart-2026-04-20-TASK-102", "CPLAN-stock-kline-chart-2026-04-20-TASK-103"] }
+}

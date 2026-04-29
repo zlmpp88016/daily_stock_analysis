@@ -1,0 +1,41 @@
+{
+  "id": "TASK-101",
+  "title": "Install klinecharts and define stock chart type definitions",
+  "scope": "apps/dsa-web/src/types/",
+  "action": "Create",
+  "description": "Install the klinecharts npm package and create TypeScript type definitions for the stock chart feature, including API request/response types and chart configuration types.",
+  "files": [
+    {
+      "path": "apps/dsa-web/package.json",
+      "action": "modify",
+      "target": "dependencies",
+      "change": "Add klinecharts dependency"
+    },
+    {
+      "path": "apps/dsa-web/src/types/stockChart.ts",
+      "action": "create",
+      "target": "new file",
+      "change": "Create type definitions for stock chart API response, K-line data points, period types, and indicator toggle state"
+    }
+  ],
+  "implementation": [
+    "Run `npm install klinecharts` in apps/dsa-web to add the klinecharts library (~40KB gzipped, zero deps)",
+    "Create apps/dsa-web/src/types/stockChart.ts with types: StockChartKlineItem (date, open, high, low, close, volume, amount), StockChartPeriod ('daily'|'weekly'|'monthly'), StockChartIndicator ('macd'|'kdj'|'boll'|'vol'), StockChartResponse (code, name, period, data: StockChartKlineItem[]), and StockChartParams (code, period, startDate, endDate)",
+    "Verify types match the backend API contract: GET /api/v1/stock-chart/{code} with camelCase transform via existing Axios interceptor"
+  ],
+  "reference": {
+    "pattern": "Type definitions pattern from strategyBacktest.ts",
+    "files": ["apps/dsa-web/src/types/strategyBacktest.ts", "apps/dsa-web/package.json"],
+    "examples": "Follow the interface definition pattern in strategyBacktest.ts with JSDoc comments"
+  },
+  "convergence": {
+    "criteria": [
+      "klinecharts listed in package.json dependencies",
+      "stockChart.ts exports at least 4 type/interfaces: StockChartKlineItem, StockChartPeriod, StockChartIndicator, StockChartResponse",
+      "TypeScript compilation passes with no errors"
+    ]
+  },
+  "depends_on": [],
+  "cli_execution_id": "CPLAN-stock-kline-chart-2026-04-20-TASK-101",
+  "cli_execution": { "strategy": "new" }
+}

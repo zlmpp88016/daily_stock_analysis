@@ -1,0 +1,111 @@
+{
+  "id": "TASK-008",
+  "title": "Frontend: Strategy Backtest Page",
+  "description": "Create the main StrategyBacktestPage.tsx page with config form (indicator params, rule builder, stock/date/cash inputs) and results display (metric cards, equity curve placeholder, trade table placeholder). Register /strategy-backtest route in App.tsx with DockNav.",
+  "type": "feature",
+  "priority": "high",
+  "effort": "large",
+  "action": "Create",
+  "scope": "apps/dsa-web/src/pages/StrategyBacktestPage.tsx, apps/dsa-web/src/App.tsx",
+  "depends_on": ["TASK-007"],
+  "convergence": {
+    "criteria": [
+      "StrategyBacktestPage.tsx renders config form with fields: stock code, start_date, end_date, initial_cash, commission_rate, slippage_rate",
+      "Config form includes indicator configuration section: MA periods, MACD fast/slow/signal, KDJ n/k/d, BOLL period/stddev",
+      "Config form includes rule builder section for buy_rules and sell_rules with dropdown-based condition creation",
+      "Page displays metric cards: total_return, max_drawdown, win_rate, trade_count after running backtest",
+      "Page shows loading state during backtest execution and error state on failure",
+      "Page uses Tailwind dark theme matching existing BacktestPage.tsx style",
+      "Chinese UI labels throughout (matching existing pages)",
+      "/strategy-backtest route registered in App.tsx with DockNav navigation item",
+      "Page follows existing page component patterns (function component, hooks for state)"
+    ],
+    "verification": "Page renders at /strategy-backtest with form and DockNav shows new tab",
+    "definition_of_done": "Strategy backtest page accessible via route with full config form and result display"
+  },
+  "files": [
+    {
+      "path": "apps/dsa-web/src/pages/StrategyBacktestPage.tsx",
+      "action": "create",
+      "target": "page component",
+      "change": "Create main page component with config form, run button, metric cards, and placeholders for equity curve and trade table",
+      "conflict_risk": "low"
+    },
+    {
+      "path": "apps/dsa-web/src/App.tsx",
+      "action": "modify",
+      "target": "route registration",
+      "change": "Add /strategy-backtest route with StrategyBacktestPage component and DockNav item",
+      "conflict_risk": "medium"
+    }
+  ],
+  "implementation": [
+    {
+      "step": 1,
+      "title": "Study existing page patterns",
+      "description": "Read BacktestPage.tsx for page layout, form patterns, Tailwind classes, and result display patterns. Read App.tsx for route registration.",
+      "actions": ["Read pages/BacktestPage.tsx", "Read App.tsx route registration", "Note DockNav item format"]
+    },
+    {
+      "step": 2,
+      "title": "Create page layout",
+      "description": "Create StrategyBacktestPage.tsx with left-side config form and right-side results area. Use Tailwind dark theme grid layout.",
+      "modification_points": ["pages/StrategyBacktestPage.tsx: new file"]
+    },
+    {
+      "step": 3,
+      "title": "Implement config form",
+      "description": "Build form with sections: basic config (stock, dates, cash), indicator config (MA/MACD/KDJ/BOLL parameters), rule config (buy/sell rules with dropdown-based condition builder)"
+    },
+    {
+      "step": 4,
+      "title": "Implement result display",
+      "description": "Add metric cards (return, drawdown, win rate, trade count) and placeholder sections for equity curve chart and trade table"
+    },
+    {
+      "step": 5,
+      "title": "Wire API integration",
+      "description": "Connect form submission to runStrategyBacktest API, handle loading/error states, display results"
+    },
+    {
+      "step": 6,
+      "title": "Register route in App.tsx",
+      "description": "Add lazy-loaded route for /strategy-backtest and DockNav navigation item",
+      "modification_points": ["App.tsx: add import, Route, and DockNav item"]
+    }
+  ],
+  "reference": {
+    "pattern": "Existing BacktestPage.tsx layout and App.tsx route registration",
+    "files": ["apps/dsa-web/src/pages/BacktestPage.tsx", "apps/dsa-web/src/App.tsx", "apps/dsa-web/src/components/common/"],
+    "examples": "Mirror BacktestPage.tsx layout structure with strategy backtest specific form and results"
+  },
+  "rationale": {
+    "chosen_approach": "Single page with config form and results, following existing BacktestPage layout pattern",
+    "alternatives_considered": ["Wizard-style multi-step form", "Separate config and results pages"],
+    "decision_factors": ["Consistency with existing UI", "Simple UX for MVP", "Single page is easier to implement"],
+    "tradeoffs": "Long page with many config options, but acceptable for MVP"
+  },
+  "test": {
+    "manual_checks": ["Page renders without console errors", "Form inputs are functional", "Run button triggers API call", "DockNav shows strategy backtest tab"],
+    "success_metrics": ["Page loads at /strategy-backtest within 2 seconds", "All form fields accept input", "API call returns and displays results"]
+  },
+  "meta": {
+    "agent": "@gemini",
+    "module": "frontend",
+    "execution_config": {
+      "method": "cli",
+      "cli_tool": "gemini",
+      "enable_resume": true
+    }
+  },
+  "cli_execution_id": "MCP-strategy-backtest-2026-04-16-TASK-008",
+  "cli_execution": {
+    "strategy": "resume",
+    "resume_from": "MCP-strategy-backtest-2026-04-16-TASK-007"
+  },
+  "commit": {
+    "type": "feat",
+    "scope": "strategy-backtest",
+    "message_template": "feat(strategy-backtest): add strategy backtest page with config form and results"
+  }
+}

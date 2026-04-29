@@ -1,0 +1,114 @@
+{
+  "id": "TASK-002",
+  "title": "Backend: Indicator Engine (MA/MACD/KDJ/BOLL)",
+  "description": "Implement pure-function indicator engine in src/strategy_backtest/indicators.py. Each indicator function takes a DataFrame with OHLCV data and configurable parameters, returns DataFrame with new indicator columns appended. Reference stock_analyzer.py for existing MA/MACD patterns; implement KDJ/BOLL from standard formulas.",
+  "type": "feature",
+  "priority": "critical",
+  "effort": "medium",
+  "action": "Create",
+  "scope": "src/strategy_backtest/indicators.py",
+  "depends_on": [],
+  "parallel_group": 1,
+  "convergence": {
+    "criteria": [
+      "calc_ma(df, periods=[5,20,30]) returns DataFrame with columns ma_5, ma_20, ma_30",
+      "calc_macd(df, fast=12, slow=26, signal=9) returns DataFrame with columns macd_dif, macd_dea, macd_hist",
+      "calc_kdj(df, n=9, k_period=3, d_period=3) returns DataFrame with columns kdj_k, kdj_d, kdj_j",
+      "calc_boll(df, period=20, stddev=2) returns DataFrame with columns boll_upper, boll_middle, boll_lower",
+      "calc_indicators(df, config) dispatches to individual calc functions based on indicator config dict",
+      "All functions are pure: no side effects, no DB access, input DataFrame not mutated",
+      "NaN handling: indicator columns have NaN for insufficient history periods (e.g., first 19 rows of MA20)",
+      "Reference stock_analyzer.py MA/MACD patterns for consistency"
+    ],
+    "verification": "python -m pytest tests/test_strategy_indicators.py -v",
+    "definition_of_done": "4 indicator functions produce correct values on known data and handle edge cases"
+  },
+  "files": [
+    {
+      "path": "src/strategy_backtest/indicators.py",
+      "action": "create",
+      "target": "module",
+      "change": "Create indicator engine with calc_ma, calc_macd, calc_kdj, calc_boll, calc_indicators functions",
+      "conflict_risk": "low"
+    }
+  ],
+  "implementation": [
+    {
+      "step": 1,
+      "title": "Study existing MA/MACD patterns",
+      "description": "Read src/stock_analyzer.py to understand existing MA and MACD calculation patterns for consistency",
+      "actions": ["Read src/stock_analyzer.py", "Note pandas rolling/ewm patterns used"]
+    },
+    {
+      "step": 2,
+      "title": "Implement calc_ma",
+      "description": "Simple moving average using pandas rolling mean. Support configurable periods list.",
+      "modification_points": ["indicators.py: calc_ma function"]
+    },
+    {
+      "step": 3,
+      "title": "Implement calc_macd",
+      "description": "MACD using pandas ewm. DIF = EMA(fast) - EMA(slow), DEA = EMA(DIF, signal), HIST = DIF - DEA. Match stock_analyzer.py logic.",
+      "modification_points": ["indicators.py: calc_macd function"]
+    },
+    {
+      "step": 4,
+      "title": "Implement calc_kdj",
+      "description": "KDJ stochastic oscillator. RSV = (Close - LowN) / (HighN - LowN) * 100. K = SMA(RSV, k_period), D = SMA(K, d_period), J = 3*K - 2*D.",
+      "modification_points": ["indicators.py: calc_kdj function"]
+    },
+    {
+      "step": 5,
+      "title": "Implement calc_boll",
+      "description": "Bollinger Bands. Middle = SMA(close, period), Upper = Middle + stddev * STD(close, period), Lower = Middle - stddev * STD(close, period).",
+      "modification_points": ["indicators.py: calc_boll function"]
+    },
+    {
+      "step": 6,
+      "title": "Implement calc_indicators dispatcher",
+      "description": "Single entry point that takes DataFrame and indicator config dict, calls relevant calc functions, returns enriched DataFrame.",
+      "modification_points": ["indicators.py: calc_indicators function"]
+    }
+  ],
+  "reference": {
+    "pattern": "stock_analyzer.py MA/MACD calculation patterns",
+    "files": ["src/stock_analyzer.py"],
+    "examples": "Follow pandas rolling/ewm patterns from stock_analyzer.py"
+  },
+  "rationale": {
+    "chosen_approach": "Pure functions taking DataFrame, returning enriched DataFrame. Stateless design for testability.",
+    "alternatives_considered": ["Class-based indicator engine", "Using TA-Lib library"],
+    "decision_factors": ["Testability (pure functions are easy to test)", "No external dependency", "Consistency with existing stock_analyzer.py patterns"],
+    "tradeoffs": "Manual implementation of KDJ/BOLL vs TA-Lib, but avoids new dependency and gives full control"
+  },
+  "test": {
+    "unit": [
+      "test_calc_ma_correctness: verify MA5 values on known price series",
+      "test_calc_macd_correctness: verify DIF/DEA/HIST on known data",
+      "test_calc_kdj_correctness: verify K/D/J on known data",
+      "test_calc_boll_correctness: verify upper/middle/lower bands",
+      "test_calc_indicators_dispatcher: verify config-based dispatch",
+      "test_nan_handling: verify NaN in first N-1 rows for MA(N)",
+      "test_empty_dataframe: verify graceful handling of empty input"
+    ],
+    "success_metrics": ["All indicator values within 0.01% of hand-calculated reference", "NaN appears in first N-1 rows for MA(N)"]
+  },
+  "meta": {
+    "agent": "@codex",
+    "module": "backend",
+    "execution_config": {
+      "method": "cli",
+      "cli_tool": "codex",
+      "enable_resume": true
+    }
+  },
+  "cli_execution_id": "MCP-strategy-backtest-2026-04-16-TASK-002",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "commit": {
+    "type": "feat",
+    "scope": "strategy-backtest",
+    "message_template": "feat(strategy-backtest): add indicator engine with MA/MACD/KDJ/BOLL calculations"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "id": "TASK-005",
+  "title": "Register kline router in API v1 router and verify integration",
+  "scope": "api/v1/router.py",
+  "action": "Update",
+  "description": "Import and register the kline router in api/v1/router.py with prefix '/kline' and tag 'Kline'. Verify the full integration works: endpoint accessible, schemas validate, service layer connects to database.",
+  "files": [
+    {
+      "path": "api/v1/router.py",
+      "action": "modify",
+      "target": "router imports and registration",
+      "change": "Add kline import and router.include_router(kline.router, prefix='/kline', tags=['Kline'])"
+    }
+  ],
+  "implementation": [
+    "Add 'from api.v1.endpoints import kline' to the imports in router.py",
+    "Add router.include_router(kline.router, prefix='/kline', tags=['Kline']) after existing registrations",
+    "Verify import resolves: run python -c 'from api.v1.router import router'",
+    "Verify endpoint shows in OpenAPI schema: check /docs path lists /api/v1/kline endpoints"
+  ],
+  "reference": {
+    "pattern": "Router registration with include_router()",
+    "files": ["api/v1/router.py"],
+    "examples": "Follow strategy_backtest registration pattern: router.include_router(strategy_backtest.router, prefix='/strategy-backtest', tags=['StrategyBacktest'])"
+  },
+  "convergence": {
+    "criteria": [
+      "kline router registered with prefix '/kline' and tag 'Kline'",
+      "Python import of api.v1.router succeeds without errors",
+      "GET /api/v1/kline/{code} endpoint listed in OpenAPI /docs",
+      "GET /api/v1/kline/{code}/chip-distribution endpoint listed in OpenAPI /docs"
+    ]
+  },
+  "depends_on": ["TASK-003", "TASK-004"],
+  "cli_execution_id": "CPLAN-stock-kline-chart-2026-04-20-TASK-005",
+  "cli_execution": { "strategy": "merge_fork", "merge_from": ["CPLAN-stock-kline-chart-2026-04-20-TASK-003", "CPLAN-stock-kline-chart-2026-04-20-TASK-004"] }
+}

@@ -1,0 +1,132 @@
+{
+  "id": "TASK-009",
+  "title": "Frontend: Chart + Components",
+  "description": "Create reusable UI components for strategy backtest: EquityCurve (recharts line chart for equity curve), TradeTable (sortable trade records table), RuleBuilder (dropdown-based condition builder for buy/sell rules). These components are used by StrategyBacktestPage.",
+  "type": "feature",
+  "priority": "medium",
+  "effort": "medium",
+  "action": "Create",
+  "scope": "apps/dsa-web/src/components/strategy-backtest/EquityCurve.tsx, apps/dsa-web/src/components/strategy-backtest/TradeTable.tsx, apps/dsa-web/src/components/strategy-backtest/RuleBuilder.tsx",
+  "depends_on": ["TASK-008"],
+  "convergence": {
+    "criteria": [
+      "EquityCurve component renders recharts LineChart with date X-axis, equity Y-axis, and drawdown area. Dark theme compatible.",
+      "TradeTable component renders sortable table with columns: trade_type, trade_date, price, shares, commission, profit, profit_rate. Color-coded profit/loss.",
+      "RuleBuilder component provides dropdown-based condition builder: select indicator pair, select operator (cross_over/cross_under/gt/lt), add/remove conditions, combine with and/or logic",
+      "RuleBuilder outputs rule expressions matching backend format: 'cross_over(ma_5, ma_20)', 'macd_dif > macd_dea'",
+      "All components use Tailwind dark theme matching existing UI",
+      "StrategyBacktestPage integrates all 3 components replacing placeholders",
+      "recharts package added to package.json if not already present"
+    ],
+    "verification": "Page renders with interactive chart, sortable table, and functional rule builder",
+    "definition_of_done": "All 3 components render correctly and integrate with StrategyBacktestPage"
+  },
+  "files": [
+    {
+      "path": "apps/dsa-web/src/components/strategy-backtest/EquityCurve.tsx",
+      "action": "create",
+      "target": "component",
+      "change": "Create recharts LineChart component for equity curve with dark theme styling",
+      "conflict_risk": "low"
+    },
+    {
+      "path": "apps/dsa-web/src/components/strategy-backtest/TradeTable.tsx",
+      "action": "create",
+      "target": "component",
+      "change": "Create sortable trade records table with color-coded profit/loss",
+      "conflict_risk": "low"
+    },
+    {
+      "path": "apps/dsa-web/src/components/strategy-backtest/RuleBuilder.tsx",
+      "action": "create",
+      "target": "component",
+      "change": "Create dropdown-based rule condition builder with add/remove and and/or logic",
+      "conflict_risk": "low"
+    },
+    {
+      "path": "apps/dsa-web/src/components/strategy-backtest/index.ts",
+      "action": "create",
+      "target": "barrel export",
+      "change": "Create barrel export for all strategy-backtest components",
+      "conflict_risk": "low"
+    },
+    {
+      "path": "apps/dsa-web/package.json",
+      "action": "modify",
+      "target": "dependencies",
+      "change": "Add recharts dependency if not present",
+      "conflict_risk": "low"
+    }
+  ],
+  "implementation": [
+    {
+      "step": 1,
+      "title": "Study existing component patterns",
+      "description": "Read existing components in apps/dsa-web/src/components/ for Tailwind dark theme patterns, component structure, and recharts usage if any",
+      "actions": ["Read components/common/ for shared patterns", "Check if recharts is already installed"]
+    },
+    {
+      "step": 2,
+      "title": "Create EquityCurve component",
+      "description": "Implement LineChart with recharts: X-axis = date, Y-axis = equity value, optional drawdown area fill. Dark theme colors (gray-800 background, green-400 line).",
+      "modification_points": ["components/strategy-backtest/EquityCurve.tsx: new file"]
+    },
+    {
+      "step": 3,
+      "title": "Create TradeTable component",
+      "description": "Implement sortable HTML table. Columns: type, date, price, shares, commission, profit, profit_rate. Sort by clicking column headers. Profit green, loss red.",
+      "modification_points": ["components/strategy-backtest/TradeTable.tsx: new file"]
+    },
+    {
+      "step": 4,
+      "title": "Create RuleBuilder component",
+      "description": "Implement condition builder: each row has indicator1 dropdown, operator dropdown, indicator2/constant input. Add/remove buttons. And/or toggle between conditions. Outputs rule expression strings.",
+      "modification_points": ["components/strategy-backtest/RuleBuilder.tsx: new file"]
+    },
+    {
+      "step": 5,
+      "title": "Integrate with StrategyBacktestPage",
+      "description": "Replace placeholder sections in StrategyBacktestPage.tsx with EquityCurve, TradeTable, and RuleBuilder components. Pass data props and handle callbacks.",
+      "modification_points": ["pages/StrategyBacktestPage.tsx: import and use new components"]
+    }
+  ],
+  "reference": {
+    "pattern": "Tailwind dark theme component patterns from existing components",
+    "files": ["apps/dsa-web/src/components/common/", "apps/dsa-web/src/pages/BacktestPage.tsx"],
+    "examples": "Follow existing component structure and Tailwind dark theme classes"
+  },
+  "rationale": {
+    "chosen_approach": "Separate components for each UI concern (chart, table, rule builder) for reusability",
+    "alternatives_considered": ["Monolithic page with inline components", "Third-party rule builder library"],
+    "decision_factors": ["Reusability", "Testability", "No additional UI library dependency"],
+    "tradeoffs": "More files to maintain, but each component is focused and testable"
+  },
+  "test": {
+    "manual_checks": [
+      "EquityCurve renders with sample data",
+      "TradeTable sorts when clicking headers",
+      "RuleBuilder adds/removes conditions",
+      "All components dark-theme compatible"
+    ],
+    "success_metrics": ["Chart renders within 500ms", "Table sorts 100+ rows smoothly", "RuleBuilder outputs valid rule expressions"]
+  },
+  "meta": {
+    "agent": "@gemini",
+    "module": "frontend",
+    "execution_config": {
+      "method": "cli",
+      "cli_tool": "gemini",
+      "enable_resume": true
+    }
+  },
+  "cli_execution_id": "MCP-strategy-backtest-2026-04-16-TASK-009",
+  "cli_execution": {
+    "strategy": "resume",
+    "resume_from": "MCP-strategy-backtest-2026-04-16-TASK-008"
+  },
+  "commit": {
+    "type": "feat",
+    "scope": "strategy-backtest",
+    "message_template": "feat(strategy-backtest): add EquityCurve, TradeTable, and RuleBuilder components"
+  }
+}

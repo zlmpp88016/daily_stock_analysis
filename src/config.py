@@ -427,10 +427,6 @@ class Config:
             if (c or "").strip()
         ]
         
-        # 如果没有配置，使用默认的示例股票
-        if not stock_list:
-            stock_list = ['600519', '000001', '300750']
-        
         # === LiteLLM multi-key parsing ===
         # GEMINI_API_KEYS (comma-separated) > GEMINI_API_KEY (single)
         _gemini_keys_raw = os.getenv('GEMINI_API_KEYS', '')
@@ -1084,9 +1080,6 @@ class Config:
             for c in stock_list_str.split(',')
             if (c or "").strip()
         ]
-
-        if not stock_list:
-            stock_list = ['000001']
 
         self.stock_list = stock_list
     

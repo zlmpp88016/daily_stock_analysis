@@ -28,7 +28,23 @@ class GetLatestDataTestCase(unittest.TestCase):
         """Initialize an isolated database for each test case."""
         self._temp_dir = tempfile.TemporaryDirectory()
         self._db_path = os.path.join(self._temp_dir.name, "test_get_latest_data.db")
+        self._original_env = {
+            key: os.environ.get(key)
+            for key in (
+                "DATABASE_URL",
+                "DATABASE_PATH",
+                "POSTGRES_HOST",
+                "POSTGRES_PORT",
+                "POSTGRES_DB",
+                "POSTGRES_USER",
+                "POSTGRES_PASSWORD",
+                "POSTGRES_SSLMODE",
+            )
+        }
+        os.environ["DATABASE_URL"] = f"sqlite:///{self._db_path}"
         os.environ["DATABASE_PATH"] = self._db_path
+        for key in ("POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_SSLMODE"):
+            os.environ.pop(key, None)
 
         Config._instance = None
         DatabaseManager.reset_instance()
@@ -37,6 +53,11 @@ class GetLatestDataTestCase(unittest.TestCase):
     def tearDown(self) -> None:
         """Clean up resources."""
         DatabaseManager.reset_instance()
+        for key, value in self._original_env.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
         self._temp_dir.cleanup()
 
     def _insert_stock_data(self, code: str, days_ago: int, close: float) -> None:

@@ -21,10 +21,26 @@ class BacktestServiceTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self._temp_dir = tempfile.TemporaryDirectory()
         self._db_path = os.path.join(self._temp_dir.name, "test_backtest_service.db")
+        self._original_env = {
+            key: os.environ.get(key)
+            for key in (
+                "DATABASE_URL",
+                "DATABASE_PATH",
+                "POSTGRES_HOST",
+                "POSTGRES_PORT",
+                "POSTGRES_DB",
+                "POSTGRES_USER",
+                "POSTGRES_PASSWORD",
+                "POSTGRES_SSLMODE",
+            )
+        }
+        os.environ["DATABASE_URL"] = f"sqlite:///{self._db_path}"
         os.environ["DATABASE_PATH"] = self._db_path
+        for key in ("POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_SSLMODE"):
+            os.environ.pop(key, None)
         os.environ["BACKTEST_EVAL_WINDOW_DAYS"] = "3"
 
-        Config._instance = None
+        Config.reset_instance()
         DatabaseManager.reset_instance()
         self.db = DatabaseManager.get_instance()
 
@@ -72,6 +88,12 @@ class BacktestServiceTestCase(unittest.TestCase):
             session.commit()
 
     def tearDown(self) -> None:
+        for key, value in self._original_env.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+        Config.reset_instance()
         DatabaseManager.reset_instance()
         self._temp_dir.cleanup()
 

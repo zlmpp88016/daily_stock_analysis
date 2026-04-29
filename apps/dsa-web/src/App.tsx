@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import {BrowserRouter as Router, Routes, Route, NavLink, useLocation, Navigate} from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import BacktestPage from './pages/BacktestPage';
+import StrategyBacktestPage from './pages/StrategyBacktestPage';
 import SettingsPage from './pages/SettingsPage';
 import LoginPage from './pages/LoginPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -24,6 +25,23 @@ const BacktestIcon: React.FC<{ active?: boolean }> = ({active}) => (
     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={active ? 2 : 1.5}
               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+    </svg>
+);
+
+const StrategyBacktestIcon: React.FC<{ active?: boolean }> = ({active}) => (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={active ? 2 : 1.5}
+            d="M4 19h16M6 16l4-4 3 3 5-7"
+        />
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={active ? 2 : 1.5}
+            d="M17 8h3v3"
+        />
     </svg>
 );
 
@@ -74,6 +92,12 @@ const NAV_ITEMS: DockItem[] = [
         label: '回测',
         to: '/backtest',
         icon: BacktestIcon,
+    },
+    {
+        key: 'strategy-backtest',
+        label: '策略回测',
+        to: '/strategy-backtest',
+        icon: StrategyBacktestIcon,
     },
     {
         key: 'settings',
@@ -207,6 +231,7 @@ const AppContent: React.FC = () => {
                     <Route path="/" element={<HomePage/>}/>
                     <Route path="/chat" element={<ChatPage/>}/>
                     <Route path="/backtest" element={<BacktestPage/>}/>
+                    <Route path="/strategy-backtest" element={<StrategyBacktestPage/>}/>
                     <Route path="/settings" element={<SettingsPage/>}/>
                     <Route path="/login" element={<LoginPage/>}/>
                     <Route path="*" element={<NotFoundPage/>}/>

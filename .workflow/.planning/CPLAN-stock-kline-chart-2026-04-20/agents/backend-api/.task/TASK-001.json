@@ -1,0 +1,39 @@
+{
+  "id": "TASK-001",
+  "title": "Define K-line data and indicator Pydantic schemas",
+  "scope": "api/v1/schemas/",
+  "action": "Create",
+  "description": "Create Pydantic v2 response schemas for K-line data API: KlineBar (OHLCV + date), KlineIndicatorBar (MACD/KDJ/BOLL fields), KlineDataResponse (list of bars with indicators), ChipDistributionResponse, and chip distribution models. Follow existing schema patterns from strategy_backtest.py.",
+  "files": [
+    {
+      "path": "api/v1/schemas/kline.py",
+      "action": "create",
+      "target": "new file",
+      "change": "KlineBar, KlineIndicatorBar, KlineDataResponse, ChipDistributionResponse schemas"
+    }
+  ],
+  "implementation": [
+    "Create api/v1/schemas/kline.py with Pydantic v2 BaseModel classes",
+    "Define KlineBar schema: date(str), open/high/low/close(float), volume(float), amount(Optional[float]), pct_chg(Optional[float])",
+    "Define KlineIndicatorBar schema: macd_dif/dea/hist, kdj_k/d/j, boll_upper/middle/lower (all Optional[float])",
+    "Define KlineDataResponse schema: code(str), name(str), period(Literal['daily','weekly','monthly']), bars(List[KlineBar]), indicators(List[KlineIndicatorBar])",
+    "Define ChipDistributionResponse schema: code, profit_ratio, avg_cost, cost_90_low/high, concentration_90, cost_70_low/high, concentration_70",
+    "Add Field() descriptions and Optional defaults for indicator fields (indicators may be None for insufficient data points)"
+  ],
+  "reference": {
+    "pattern": "Pydantic v2 BaseModel with Field descriptions",
+    "files": ["api/v1/schemas/strategy_backtest.py", "api/v1/schemas/common.py"],
+    "examples": "Follow StrategyBacktestRunResponse pattern - extend from base model, add Field() with description"
+  },
+  "convergence": {
+    "criteria": [
+      "5 schema classes defined: KlineBar, KlineIndicatorBar, KlineDataResponse, ChipDistributionResponse, KlineDataRequest",
+      "All numeric fields use float type with Optional where applicable",
+      "Period field constrained to Literal['daily', 'weekly', 'monthly']",
+      "Schema imports resolve without errors"
+    ]
+  },
+  "depends_on": [],
+  "cli_execution_id": "CPLAN-stock-kline-chart-2026-04-20-TASK-001",
+  "cli_execution": { "strategy": "new" }
+}

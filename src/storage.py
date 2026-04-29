@@ -76,7 +76,7 @@ class StockDaily(Base):
     code = Column(String(10), nullable=False, index=True)
 
     # 股票名称（如 贵州茅台）
-    name = Column(String(50), nullable=False, server_default='')
+    name = Column(String(50), nullable=False, default='', server_default='')
     
     # 交易日期
     date = Column(Date, nullable=False, index=True)
@@ -366,6 +366,93 @@ class BacktestSummary(Base):
             'engine_version',
             name='uix_backtest_summary_scope_code_window_version',
         ),
+    )
+
+
+class StrategyBacktestRun(Base):
+    """Persistent snapshot for one strategy backtest run."""
+
+    __tablename__ = 'strategy_backtest_runs'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    code = Column(String(40), nullable=False, index=True)
+    start_date = Column(Date, nullable=False, index=True)
+    end_date = Column(Date, nullable=False, index=True)
+
+    initial_cash = Column(Float, nullable=False)
+    commission_rate = Column(Float, nullable=False, default=0.0)
+    slippage_rate = Column(Float, nullable=False, default=0.0)
+    execution_mode = Column(String(64), nullable=False, default='next_open')
+
+    indicators_json = Column(Text, nullable=False)
+    buy_rules_json = Column(Text, nullable=False)
+    sell_rules_json = Column(Text, nullable=False)
+
+    status = Column(String(32), nullable=False, default='pending', index=True)
+    total_return = Column(Float)
+    max_drawdown = Column(Float)
+    win_rate = Column(Float)
+    trade_count = Column(Integer, nullable=False, default=0)
+    avg_holding_days = Column(Float)
+
+    created_at = Column(DateTime, default=datetime.now, index=True)
+
+    __table_args__ = (
+        Index('ix_strategy_backtest_run_code_range', 'code', 'start_date', 'end_date'),
+    )
+
+
+class StrategyBacktestTrade(Base):
+    """Trade ledger row for a strategy backtest run."""
+
+    __tablename__ = 'strategy_backtest_trades'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    run_id = Column(
+        Integer,
+        ForeignKey('strategy_backtest_runs.id'),
+        nullable=False,
+        index=True,
+    )
+
+    trade_type = Column(String(16), nullable=False)
+    trade_date = Column(Date, nullable=False, index=True)
+    price = Column(Float, nullable=False)
+    shares = Column(Integer, nullable=False)
+    commission = Column(Float, nullable=False, default=0.0)
+    profit = Column(Float)
+    profit_rate = Column(Float)
+
+    __table_args__ = (
+        Index('ix_strategy_backtest_trade_run_date', 'run_id', 'trade_date'),
+    )
+
+
+class StrategyBacktestEquity(Base):
+    """Daily equity curve row for a strategy backtest run."""
+
+    __tablename__ = 'strategy_backtest_equity'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    run_id = Column(
+        Integer,
+        ForeignKey('strategy_backtest_runs.id'),
+        nullable=False,
+        index=True,
+    )
+
+    date = Column(Date, nullable=False, index=True)
+    equity = Column(Float, nullable=False)
+    cash = Column(Float, nullable=False)
+    position_value = Column(Float, nullable=False)
+    drawdown = Column(Float)
+
+    __table_args__ = (
+        UniqueConstraint('run_id', 'date', name='uix_strategy_backtest_equity_run_date'),
+        Index('ix_strategy_backtest_equity_run_date', 'run_id', 'date'),
     )
 
 

@@ -322,15 +322,20 @@ def test_notification():
     
     config = get_config()
     service = NotificationService()
+    wechat_webhook_url = (config.wechat_webhook_url or "").strip()
     
     print_section("配置检查")
-    if service.is_available():
+    if wechat_webhook_url:
         print(f"  ✓ 企业微信 Webhook 已配置")
-        webhook_preview = config.wechat_webhook_url[:50] + "..." if len(config.wechat_webhook_url) > 50 else config.wechat_webhook_url
+        webhook_preview = wechat_webhook_url[:50] + "..." if len(wechat_webhook_url) > 50 else wechat_webhook_url
         print(f"    URL: {webhook_preview}")
+    elif service.is_available():
+        print(f"  ✓ 已配置其他通知渠道: {service.get_channel_names()}")
+        print(f"  ✗ 未配置企业微信 Webhook，跳过企业微信专用测试")
+        return
     else:
         print(f"  ✗ 企业微信 Webhook 未配置")
-        return False
+        return
     
     print_section("发送测试消息")
     
@@ -352,12 +357,11 @@ def test_notification():
             print(f"  ✓ 消息发送成功，请检查企业微信")
         else:
             print(f"  ✗ 消息发送失败")
-        
-        return success
+        return
         
     except Exception as e:
         print(f"  ✗ 发送异常: {e}")
-        return False
+        return
 
 
 def run_all_tests():

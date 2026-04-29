@@ -1,0 +1,168 @@
+{
+  "id": "TASK-004",
+  "title": "Backend: Backtest Engine",
+  "description": "Implement the core backtest engine in src/strategy_backtest/engine.py. Protocol-based pure engine that performs day-by-day simulation: calculate indicators -> evaluate rules -> generate signals -> T+1 trade execution -> equity tracking. Single position, long-only, configurable commission and slippage.",
+  "type": "feature",
+  "priority": "critical",
+  "effort": "large",
+  "action": "Create",
+  "scope": "src/strategy_backtest/engine.py",
+  "depends_on": ["TASK-002", "TASK-003"],
+  "convergence": {
+    "criteria": [
+      "StrategyBacktestEngine class with run() method accepting DataFrame + config, returning BacktestResult with trades list, equity curve, and summary statistics",
+      "T+1 execution model: signal on day T, execute at T+1 open price (no look-ahead bias)",
+      "Single position constraint: cannot buy when already holding, cannot sell when no position",
+      "Commission calculation: commission = price * shares * commission_rate on both buy and sell",
+      "Slippage model: buy_price = open_price * (1 + slippage_rate), sell_price = open_price * (1 - slippage_rate)",
+      "Share calculation: shares = floor(available_cash * (1 - commission_rate) / buy_price / 100) * 100 (round to lot of 100)",
+      "Equity curve: daily equity = cash + position_shares * close_price",
+      "Summary statistics: total_return, max_drawdown, win_rate, trade_count, avg_holding_days",
+      "Win rate = winning_trades / total_closed_trades",
+      "Max drawdown = max((peak - trough) / peak) across entire equity curve",
+      "Engine is pure: no DB access, no side effects, takes DataFrame returns BacktestResult dataclass"
+    ],
+    "verification": "python -m pytest tests/test_strategy_engine.py -v",
+    "definition_of_done": "Engine produces correct trades and statistics on synthetic data with known outcomes"
+  },
+  "files": [
+    {
+      "path": "src/strategy_backtest/engine.py",
+      "action": "create",
+      "target": "module",
+      "change": "Create StrategyBacktestEngine class with run method implementing T+1 simulation loop",
+      "conflict_risk": "low"
+    }
+  ],
+  "implementation": [
+    {
+      "step": 1,
+      "title": "Define data structures",
+      "description": "Define BacktestConfig, Trade, EquityPoint, BacktestSummary, BacktestResult dataclasses for engine input/output"
+    },
+    {
+      "step": 2,
+      "title": "Implement main simulation loop",
+      "description": "Iterate DataFrame day-by-day. On each day: check if holding position, evaluate buy/sell rules, queue signal for T+1 execution, execute pending orders at open price",
+      "modification_points": ["engine.py: StrategyBacktestEngine.run method"]
+    },
+    {
+      "step": 3,
+      "title": "Implement trade execution logic",
+      "description": "Buy: calculate shares from available cash with commission, deduct cash, add position. Sell: calculate proceeds with commission, add cash, clear position. Apply slippage to execution prices.",
+      "modification_points": ["engine.py: _execute_buy, _execute_sell methods"]
+    },
+    {
+      "step": 4,
+      "title": "Implement equity tracking",
+      "description": "After each day's execution, record equity point: date, cash, position_value, total_equity, drawdown from peak",
+      "modification_points": ["engine.py: _track_equity method"]
+    },
+    {
+      "step": 5,
+      "title": "Implement summary statistics",
+      "description": "After simulation completes, calculate total_return, max_drawdown, win_rate, trade_count, avg_holding_days from trades and equity data",
+      "modification_points": ["engine.py: _calculate_summary method"]
+    },
+    {
+      "step": 6,
+      "title": "Validate with synthetic data",
+      "description": "Create test with known price series and simple rules (e.g., MA5 cross MA20), verify trade timing matches T+1 model and statistics are correct"
+    }
+  ],
+  "reference": {
+    "pattern": "Protocol-based pure engine, no service/DB dependencies",
+    "files": ["src/core/backtest_engine.py"],
+    "examples": "Reference existing backtest_engine.py for simulation loop structure, but implement new engine independently"
+  },
+  "rationale": {
+    "chosen_approach": "Protocol-based pure engine (no DB/service dependencies) for maximum testability and reusability",
+    "alternatives_considered": ["Service-integrated engine", "NumPy vectorized simulation"],
+    "decision_factors": ["Testability (pure function)", "Clarity (day-by-day loop is easy to debug)", "No external dependencies"],
+    "tradeoffs": "Day-by-day loop is slower than vectorized approach, but MVP performance is acceptable for daily data"
+  },
+  "risks": [
+    {
+      "description": "T+1 execution boundary may have off-by-one errors in signal vs execution dates",
+      "probability": "Medium",
+      "impact": "High",
+      "mitigation": "Extensive edge case testing with known-outcome synthetic data",
+      "fallback": "Add explicit date logging for signal and execution dates"
+    },
+    {
+      "description": "Rounding to lots of 100 shares may cause cash balance edge cases",
+      "probability": "Low",
+      "impact": "Medium",
+      "mitigation": "Ensure share calculation uses floor division by 100, test with various price levels"
+    }
+  ],
+  "code_skeleton": {
+    "key_functions": [
+      {
+        "signature": "StrategyBacktestEngine.run(df: DataFrame, config: BacktestConfig) -> BacktestResult",
+        "purpose": "Main simulation entry point",
+        "returns": "BacktestResult with trades, equity curve, summary"
+      },
+      {
+        "signature": "StrategyBacktestEngine._execute_buy(price: float, cash: float, config: BacktestConfig) -> Tuple[int, float]",
+        "purpose": "Calculate shares and deduct cash for buy order",
+        "returns": "Tuple of (shares, remaining_cash)"
+      },
+      {
+        "signature": "StrategyBacktestEngine._execute_sell(price: float, shares: int, config: BacktestConfig) -> float",
+        "purpose": "Calculate proceeds from sell order",
+        "returns": "Cash received after commission"
+      }
+    ],
+    "classes": [
+      {
+        "name": "BacktestConfig",
+        "purpose": "Configuration dataclass: initial_cash, commission_rate, slippage_rate, execution_mode",
+        "methods": []
+      },
+      {
+        "name": "BacktestResult",
+        "purpose": "Output dataclass: trades list, equity_points list, summary statistics",
+        "methods": []
+      },
+      {
+        "name": "StrategyBacktestEngine",
+        "purpose": "Main simulation engine with run method",
+        "methods": ["run", "_execute_buy", "_execute_sell", "_track_equity", "_calculate_summary"]
+      }
+    ]
+  },
+  "test": {
+    "unit": [
+      "test_engine_simple_crossover: known MA crossover scenario with verified trade timing",
+      "test_engine_t_plus_one: verify signal day != execution day",
+      "test_engine_single_position: verify cannot buy when holding",
+      "test_engine_commission_calc: verify commission deducted correctly",
+      "test_engine_slippage_applied: verify slippage adjusts execution price",
+      "test_engine_share_rounding: verify shares rounded to lots of 100",
+      "test_engine_max_drawdown: verify drawdown calculation on known equity curve",
+      "test_engine_win_rate: verify win rate on known trades",
+      "test_engine_no_signals: verify engine handles period with no signals gracefully"
+    ],
+    "success_metrics": ["All trades execute at T+1 open price", "Total return matches hand-calculated value within 0.01%", "Max drawdown matches hand-calculated value"]
+  },
+  "meta": {
+    "agent": "@codex",
+    "module": "backend",
+    "execution_config": {
+      "method": "cli",
+      "cli_tool": "codex",
+      "enable_resume": true
+    }
+  },
+  "cli_execution_id": "MCP-strategy-backtest-2026-04-16-TASK-004",
+  "cli_execution": {
+    "strategy": "merge_fork",
+    "merge_from": ["MCP-strategy-backtest-2026-04-16-TASK-002", "MCP-strategy-backtest-2026-04-16-TASK-003"]
+  },
+  "commit": {
+    "type": "feat",
+    "scope": "strategy-backtest",
+    "message_template": "feat(strategy-backtest): add backtest engine with T+1 execution model"
+  }
+}

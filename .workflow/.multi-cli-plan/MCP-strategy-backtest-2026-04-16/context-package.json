@@ -1,0 +1,123 @@
+{
+  "solution": {
+    "name": "Layered Module with Protocol-based Engine + Rule DSL",
+    "source_cli": ["claude-explore-backend", "claude-explore-frontend"],
+    "feasibility": 0.9,
+    "effort": "medium",
+    "risk": "low",
+    "summary": "Full PRD implementation: MA/MACD/KDJ/BOLL indicator engine + cross_over/cross_under/gt/lt/and/or rule DSL + T+1 backtest engine + Service/API/DB + Frontend page with config form, equity curve, trade table. Backend assigned to Codex, Frontend to Gemini."
+  },
+  "implementation_plan": {
+    "approach": "Mirror existing backtest module architecture with new strategy_backtest namespace. Backend-first (Codex) enabling parallel frontend work (Gemini).",
+    "tasks": [
+      {
+        "id": "T1",
+        "name": "Backend: Data Models & DB Tables",
+        "depends_on": [],
+        "files": ["src/storage.py", "src/strategy_backtest/models.py"],
+        "key_point": "Add StrategyBacktestRun, StrategyBacktestTrade, StrategyBacktestEquity ORM models in storage.py. Pydantic request/response models matching PRD section 7 JSON. No alembic - use Base.metadata.create_all like existing tables."
+      },
+      {
+        "id": "T2",
+        "name": "Backend: Indicator Engine (MA/MACD/KDJ/BOLL)",
+        "depends_on": [],
+        "files": ["src/strategy_backtest/indicators.py"],
+        "key_point": "Pure functions. Each indicator takes DataFrame+params, returns DataFrame with indicator columns. Reference stock_analyzer.py for MA/MACD patterns. Implement KDJ/BOLL from standard formulas."
+      },
+      {
+        "id": "T3",
+        "name": "Backend: Rule Engine",
+        "depends_on": ["T2"],
+        "files": ["src/strategy_backtest/rules.py"],
+        "key_point": "Parse rule expressions (cross_over, cross_under, gt, lt, and, or). Evaluate against indicator columns. Return boolean signal series."
+      },
+      {
+        "id": "T4",
+        "name": "Backend: Backtest Engine",
+        "depends_on": ["T2", "T3"],
+        "files": ["src/strategy_backtest/engine.py"],
+        "key_point": "Protocol-based pure engine. Day-by-day: indicators -> rules -> signals -> T+1 trade execution -> equity tracking. Single position long-only."
+      },
+      {
+        "id": "T5",
+        "name": "Backend: Service + Repository + API",
+        "depends_on": ["T1", "T4"],
+        "files": ["src/services/strategy_backtest_service.py", "src/repositories/strategy_backtest_repo.py", "api/v1/schemas/strategy_backtest.py", "api/v1/endpoints/strategy_backtest.py", "api/v1/router.py"],
+        "key_point": "Service: data fetch + indicator calc + engine run + persist. API: POST /run, GET /history, GET /{run_id}. Register /api/v1/strategy-backtest router."
+      },
+      {
+        "id": "T6",
+        "name": "Backend: Unit Tests",
+        "depends_on": ["T2", "T3", "T4"],
+        "files": ["tests/test_strategy_indicators.py", "tests/test_strategy_rules.py", "tests/test_strategy_engine.py"],
+        "key_point": "Indicator correctness, rule edge cases, full backtest with synthetic data."
+      },
+      {
+        "id": "T7",
+        "name": "Frontend: Types + API Client",
+        "depends_on": ["T5"],
+        "files": ["apps/dsa-web/src/types/strategyBacktest.ts", "apps/dsa-web/src/api/strategyBacktest.ts"],
+        "key_point": "TypeScript interfaces. API functions: runStrategyBacktest, getRunHistory, getRunDetail. Follow api/backtest.ts pattern."
+      },
+      {
+        "id": "T8",
+        "name": "Frontend: Strategy Backtest Page",
+        "depends_on": ["T7"],
+        "files": ["apps/dsa-web/src/pages/StrategyBacktestPage.tsx", "apps/dsa-web/src/App.tsx"],
+        "key_point": "Config form (indicator params, rule builder, stock/date/cash) + results (metric cards, equity curve, trade table). Register /strategy-backtest route."
+      },
+      {
+        "id": "T9",
+        "name": "Frontend: Chart + Components",
+        "depends_on": ["T8"],
+        "files": ["apps/dsa-web/src/components/strategy-backtest/EquityCurve.tsx", "apps/dsa-web/src/components/strategy-backtest/TradeTable.tsx", "apps/dsa-web/src/components/strategy-backtest/RuleBuilder.tsx"],
+        "key_point": "EquityCurve: recharts line chart. TradeTable: sortable. RuleBuilder: dropdown-based condition builder."
+      }
+    ],
+    "execution_flow": "T1 + T2 (parallel) -> T3 -> T4 -> T5 + T6 (parallel) -> T7 -> T8 -> T9",
+    "milestones": ["Indicator engine ready", "Backend pipeline complete", "API tested", "Frontend page with results"]
+  },
+  "dependencies": {
+    "internal": ["src/storage.py", "src/stock_analyzer.py", "data_provider/base.py", "api/v1/router.py"],
+    "external": ["recharts (npm package for charts)"]
+  },
+  "technical_concerns": [
+    "KDJ/BOLL have no existing code reference - implement from standard formulas",
+    "Rule expression parsing for nested and/or conditions needs careful AST design",
+    "recharts needs to be added to package.json",
+    "DataFetcherManager DataFrame may have NaN for insufficient history periods"
+  ],
+  "consensus": {
+    "agreements": [
+      "Layered architecture pattern (Engine -> Service -> Repository -> API)",
+      "KDJ/BOLL must be implemented from scratch",
+      "Frontend: Tailwind dark theme, no component library, Chinese UI",
+      "DataFetcherManager for historical data access",
+      "T+1 execution model to avoid look-ahead bias",
+      "Independent module from existing AI backtest"
+    ],
+    "resolved_conflicts": "PRD requires configurable rules with cross_over/cross_under/gt/lt/and/or. Go with full DSL."
+  },
+  "constraints": [
+    "Backend implementation assigned to Codex CLI tool",
+    "Frontend implementation assigned to Gemini CLI tool",
+    "Final review by Claude + Codex together",
+    "Single stock, daily, long-only for MVP",
+    "Must not modify existing backtest module",
+    "No alembic migrations - use create_all pattern"
+  ],
+  "task_description": "实现可定制技术指标策略回测功能：支持 MA/MACD/KDJ/BOLL 指标配置、cross_over/cross_under/gt/lt/and/or 买卖规则、指定股票和时间区间执行历史回测、输出交易明细和绩效指标",
+  "session_id": "MCP-strategy-backtest-2026-04-16",
+  "executor_assignments": {
+    "codex": {
+      "tasks": ["T1", "T2", "T3", "T4", "T5", "T6"],
+      "scope": "backend",
+      "description": "All backend: models, indicators, rules, engine, service, repository, API, tests"
+    },
+    "gemini": {
+      "tasks": ["T7", "T8", "T9"],
+      "scope": "frontend",
+      "description": "All frontend: types, API client, page, components, routing"
+    }
+  }
+}

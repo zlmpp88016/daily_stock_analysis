@@ -1,0 +1,20 @@
+{
+  "session_id": "CPLAN-stock-kline-chart-2026-04-20",
+  "original_requirement": "StrategyBacktestPage.tsx 增加个股看盘功能：输入股票代码，回显日K/周K/月K、筹码、成交量、MACD/KDJ/BOLL指标",
+  "complexity": "Medium",
+  "sub_domains": [
+    {
+      "focus_area": "backend-api",
+      "description": "后端API - 提供K线数据查询（日/周/月K聚合）、技术指标计算（MACD/KDJ/BOLL复用indicators.py）、筹码分布接口",
+      "task_id_range": [1, 100],
+      "estimated_effort": "medium"
+    },
+    {
+      "focus_area": "frontend-chart",
+      "description": "前端图表 - 安装KLineChart、封装React K线组件、集成指标叠加、周K/月K切换、页面整合到StrategyBacktestPage",
+      "task_id_range": [101, 200],
+      "estimated_effort": "medium"
+    }
+  ],
+  "total_agents": 2
+}

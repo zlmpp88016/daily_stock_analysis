@@ -1,0 +1,53 @@
+{
+  "id": "TASK-002",
+  "title": "Implement K-line data service with period aggregation and indicator calculation",
+  "scope": "src/services/",
+  "action": "Create",
+  "description": "Create KlineService that: (1) queries daily OHLCV data from stock_daily via StockRepository, (2) aggregates daily data into weekly/monthly K-line bars using pandas resample, (3) computes MACD/KDJ/BOLL indicators by calling existing calc_macd/calc_kdj/calc_boll from indicators.py. This is the core business logic layer.",
+  "files": [
+    {
+      "path": "src/services/kline_service.py",
+      "action": "create",
+      "target": "new file",
+      "change": "KlineService class with get_kline_data() method handling daily/weekly/monthly aggregation + indicator calculation"
+    }
+  ],
+  "implementation": [
+    "Create src/services/kline_service.py with KlineService class accepting DatabaseManager in __init__",
+    "Implement _query_daily_data(code, start_date, end_date) -> pd.DataFrame: query StockDaily via SQLAlchemy session, convert to DataFrame with columns [date, open, high, low, close, volume, amount, pct_chg]",
+    "Implement _aggregate_weekly(df) -> pd.DataFrame: set date as index, use df.resample('W').agg({open:'first', high:'max', low:'min', close:'last', volume:'sum', amount:'sum'}) to produce weekly bars",
+    "Implement _aggregate_monthly(df) -> pd.DataFrame: same as weekly but resample('ME') for month-end aggregation",
+    "Implement _compute_indicators(df) -> pd.DataFrame: call calc_macd(df), calc_kdj(df), calc_boll(df) sequentially, return enriched DataFrame with indicator columns",
+    "Implement get_kline_data(code, period='daily', start_date=None, end_date=None, limit=500) -> dict: orchestrate query -> aggregate(if needed) -> compute_indicators -> return dict with bars and indicators lists"
+  ],
+  "reference": {
+    "pattern": "Service class with DatabaseManager dependency, pandas DataFrame processing",
+    "files": ["src/strategy_backtest/indicators.py", "src/repositories/stock_repo.py", "src/services/strategy_backtest_service.py"],
+    "examples": "calc_macd/calc_kdj/calc_boll accept DataFrame with close/high/low columns and append indicator columns. Follow StrategyBacktestService constructor pattern for DatabaseManager injection."
+  },
+  "convergence": {
+    "criteria": [
+      "KlineService.get_kline_data() returns dict with 'bars' and 'indicators' keys",
+      "Daily period returns raw daily data without aggregation",
+      "Weekly aggregation uses pandas resample('W') with OHLCV aggregation rules (first/max/min/last/sum)",
+      "Monthly aggregation uses pandas resample('ME')",
+      "MACD/KDJ/BOLL indicators computed using indicators.py functions",
+      "Service handles insufficient data gracefully (return empty lists)"
+    ]
+  },
+  "depends_on": [],
+  "cli_execution_id": "CPLAN-stock-kline-chart-2026-04-20-TASK-002",
+  "cli_execution": { "strategy": "new" },
+  "rationale": {
+    "chosen_approach": "Pandas resample for period aggregation because daily data is already in DataFrame form and resample is the idiomatic pandas way",
+    "alternatives_considered": ["SQL GROUP BY aggregation", "Manual loop-based aggregation"],
+    "decision_factors": ["Pandas resample is concise and correct for financial data", "indicators.py already operates on DataFrames", "Consistent with existing codebase patterns"],
+    "tradeoffs": "Requires pandas dependency (already present), slightly more memory than SQL aggregation for very large datasets"
+  },
+  "test": {
+    "manual_checks": ["Verify weekly bars aggregate Monday-Friday correctly", "Verify monthly bars use month-end boundary", "Verify indicator columns are present in output"],
+    "success_metrics": ["Weekly aggregation produces correct OHLCV for sample data", "Monthly aggregation matches expected monthly bars"],
+    "unit": ["test_kline_service_daily", "test_kline_service_weekly_aggregation", "test_kline_service_monthly_aggregation", "test_kline_service_indicators"],
+    "integration": []
+  }
+}

@@ -45,6 +45,7 @@ def _get_lock():
     global _rate_limit_lock
     if _rate_limit_lock is None:
         import threading
+
         _rate_limit_lock = threading.Lock()
     return _rate_limit_lock
 
@@ -52,6 +53,7 @@ def _get_lock():
 def _ensure_env_loaded() -> None:
     """Ensure .env is loaded before reading config."""
     from src.config import setup_env
+
     setup_env()
 
 
@@ -70,9 +72,10 @@ def _get_credential_path() -> Path:
 
 
 def _is_auth_enabled_from_env() -> bool:
-    """Read ADMIN_AUTH_ENABLED from .env file."""
+    """Read ADMIN_AUTH_ENABLED from the active .env file."""
     _ensure_env_loaded()
-    env_path = Path(__file__).resolve().parent.parent / ".env"
+    env_file = os.getenv("ENV_FILE")
+    env_path = Path(env_file) if env_file else (Path(__file__).resolve().parent.parent / ".env")
     if not env_path.exists():
         return False
     values = dotenv_values(env_path)
@@ -154,7 +157,7 @@ def _load_credential_from_file() -> bool:
         return False
 
     try:
-        raw = path.read_text().strip()
+        raw = path.read_text(encoding="utf-8").strip()
         parsed = _parse_password_hash(raw)
         if parsed is None:
             logger.warning("Invalid .admin_password_hash format, ignoring")
@@ -204,6 +207,30 @@ def _validate_password(pwd: str) -> Optional[str]:
     return None
 
 
+def _write_credential_file(cred_path: Path, content: str, reload_after: bool = False) -> Optional[str]:
+    """Persist credential content atomically and compatibly across platforms."""
+    tmp_path = cred_path.with_name(f"{cred_path.name}.{secrets.token_hex(8)}.tmp")
+
+    try:
+        tmp_path.write_text(content, encoding="utf-8")
+        try:
+            tmp_path.chmod(0o600)
+        except OSError:
+            logger.debug("Unable to chmod temp credential file: %s", tmp_path)
+        os.replace(tmp_path, cred_path)
+        if reload_after:
+            _load_credential_from_file()
+        return None
+    except OSError as e:
+        logger.error("Failed to write credential file: %s", e)
+        try:
+            if tmp_path.exists():
+                tmp_path.unlink()
+        except OSError:
+            logger.debug("Unable to cleanup temp credential file: %s", tmp_path)
+        return "密码保存失败"
+
+
 def set_initial_password(password: str) -> Optional[str]:
     """
     Set initial password (first-time setup). Returns error message or None on success.
@@ -227,16 +254,7 @@ def set_initial_password(password: str) -> Optional[str]:
     salt_b64 = base64.standard_b64encode(salt).decode("ascii")
     hash_b64 = base64.standard_b64encode(derived).decode("ascii")
     content = f"{salt_b64}:{hash_b64}"
-
-    try:
-        tmp_path = cred_path.with_suffix(".tmp")
-        tmp_path.write_text(content)
-        tmp_path.chmod(0o600)
-        tmp_path.rename(cred_path)
-        return None
-    except OSError as e:
-        logger.error("Failed to write credential file: %s", e)
-        return "密码保存失败"
+    return _write_credential_file(cred_path, content, reload_after=True)
 
 
 def verify_password(password: str) -> bool:
@@ -277,18 +295,7 @@ def change_password(current: str, new: str) -> Optional[str]:
     salt_b64 = base64.standard_b64encode(salt).decode("ascii")
     hash_b64 = base64.standard_b64encode(derived).decode("ascii")
     content = f"{salt_b64}:{hash_b64}"
-
-    try:
-        tmp_path = cred_path.with_suffix(".tmp")
-        tmp_path.write_text(content)
-        tmp_path.chmod(0o600)
-        tmp_path.rename(cred_path)
-        # Reload into memory so subsequent verify_password uses new hash
-        _load_credential_from_file()
-        return None
-    except OSError as e:
-        logger.error("Failed to write credential file: %s", e)
-        return "密码保存失败"
+    return _write_credential_file(cred_path, content, reload_after=True)
 
 
 def create_session() -> str:
@@ -346,10 +353,10 @@ def check_rate_limit(ip: str) -> bool:
     now = time.time()
     with lock:
         expired_keys = [k for k, (_, ts) in _rate_limit.items() if now - ts > RATE_LIMIT_WINDOW_SEC]
-        for k in expired_keys:
-            del _rate_limit[k]
+        for key in expired_keys:
+            del _rate_limit[key]
         if ip in _rate_limit:
-            count, first_ts = _rate_limit[ip]
+            count, _ = _rate_limit[ip]
             if count >= RATE_LIMIT_MAX_FAILURES:
                 return False
         return True
@@ -402,17 +409,7 @@ def overwrite_password(new_password: str) -> Optional[str]:
     salt_b64 = base64.standard_b64encode(salt).decode("ascii")
     hash_b64 = base64.standard_b64encode(derived).decode("ascii")
     content = f"{salt_b64}:{hash_b64}"
-
-    try:
-        tmp_path = cred_path.with_suffix(".tmp")
-        tmp_path.write_text(content)
-        tmp_path.chmod(0o600)
-        tmp_path.rename(cred_path)
-        _load_credential_from_file()
-        return None
-    except OSError as e:
-        logger.error("Failed to write credential file: %s", e)
-        return "密码保存失败"
+    return _write_credential_file(cred_path, content, reload_after=True)
 
 
 def reset_password_cli() -> int:

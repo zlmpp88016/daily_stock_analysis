@@ -1,0 +1,108 @@
+{
+  "id": "TASK-001",
+  "title": "Backend: Data Models & DB Tables",
+  "description": "Create StrategyBacktestRun, StrategyBacktestTrade, StrategyBacktestEquity ORM models in storage.py and Pydantic request/response models in src/strategy_backtest/models.py. These models capture the full PRD section 7 JSON structure and persist backtest results independently from the existing AI backtest tables.",
+  "type": "infrastructure",
+  "priority": "critical",
+  "effort": "medium",
+  "action": "Create",
+  "scope": "src/strategy_backtest/models.py, src/storage.py",
+  "depends_on": [],
+  "parallel_group": 1,
+  "convergence": {
+    "criteria": [
+      "StrategyBacktestRun table created with columns: id, code, start_date, end_date, initial_cash, commission_rate, slippage_rate, execution_mode, indicators_json, buy_rules_json, sell_rules_json, status, total_return, max_drawdown, win_rate, trade_count, avg_holding_days, created_at",
+      "StrategyBacktestTrade table created with columns: id, run_id (FK), trade_type (buy/sell), trade_date, price, shares, commission, profit, profit_rate",
+      "StrategyBacktestEquity table created with columns: id, run_id (FK), date, equity, cash, position_value, drawdown",
+      "Pydantic models in models.py covering: StrategyBacktestRequest (with indicators, buy_rules, sell_rules, code, dates, initial_cash, commission_rate, slippage_rate), StrategyBacktestRunResponse, StrategyBacktestTradeResponse, StrategyBacktestEquityResponse, StrategyBacktestSummary",
+      "Base.metadata.create_all creates all 3 new tables without errors",
+      "No modifications to existing backtest_results/backtest_summaries tables"
+    ],
+    "verification": "python -c \"from src.storage import Base; tables = [t.name for t in Base.metadata.sorted_tables]; assert 'strategy_backtest_runs' in tables; assert 'strategy_backtest_trades' in tables; assert 'strategy_backtest_equity' in tables\"",
+    "definition_of_done": "3 new DB tables exist and Pydantic models match PRD section 7 JSON structure"
+  },
+  "files": [
+    {
+      "path": "src/storage.py",
+      "action": "modify",
+      "target": "Base class",
+      "change": "Add StrategyBacktestRun, StrategyBacktestTrade, StrategyBacktestEquity ORM models following existing BacktestResult/BacktestSummary pattern",
+      "conflict_risk": "low"
+    },
+    {
+      "path": "src/strategy_backtest/models.py",
+      "action": "create",
+      "target": "module",
+      "change": "Create Pydantic request/response schemas matching PRD section 7 JSON: StrategyBacktestRequest, IndicatorConfig, RuleConfig, StrategyBacktestRunResponse, StrategyBacktestTradeResponse, StrategyBacktestEquityResponse, StrategyBacktestSummary",
+      "conflict_risk": "low"
+    },
+    {
+      "path": "src/strategy_backtest/__init__.py",
+      "action": "create",
+      "target": "module init",
+      "change": "Create package init file for strategy_backtest module",
+      "conflict_risk": "low"
+    }
+  ],
+  "implementation": [
+    {
+      "step": 1,
+      "title": "Study existing ORM patterns",
+      "description": "Read src/storage.py to understand BacktestResult, BacktestSummary table patterns, column types, and relationship conventions",
+      "actions": ["Read src/storage.py", "Identify column naming conventions (snake_case)", "Note relationship/foreign key patterns"]
+    },
+    {
+      "step": 2,
+      "title": "Add ORM models to storage.py",
+      "description": "Add 3 new SQLAlchemy models: StrategyBacktestRun (main run record with all config + summary stats), StrategyBacktestTrade (individual trade records with FK to run), StrategyBacktestEquity (daily equity curve with FK to run)",
+      "modification_points": ["src/storage.py: Add 3 new classes after existing models"]
+    },
+    {
+      "step": 3,
+      "title": "Create strategy_backtest package",
+      "description": "Create src/strategy_backtest/__init__.py and src/strategy_backtest/models.py with Pydantic schemas",
+      "actions": ["mkdir src/strategy_backtest", "Create __init__.py", "Create models.py with all Pydantic classes"]
+    },
+    {
+      "step": 4,
+      "title": "Validate table creation",
+      "description": "Run Base.metadata.create_all in a test script to verify all 3 tables are created without errors",
+      "actions": ["Create temporary validation script", "Verify table columns match PRD requirements"]
+    }
+  ],
+  "reference": {
+    "pattern": "Existing BacktestResult/BacktestSummary ORM pattern in src/storage.py",
+    "files": ["src/storage.py", "api/v1/schemas/backtest.py"],
+    "examples": "Follow BacktestResult column naming and relationship patterns"
+  },
+  "rationale": {
+    "chosen_approach": "Independent tables separate from existing AI backtest to maintain clear semantic boundaries",
+    "alternatives_considered": ["Extending existing backtest tables", "Using separate database"],
+    "decision_factors": ["Semantic clarity (strategy backtest vs AI backtest)", "No risk to existing functionality", "Simple query patterns"],
+    "tradeoffs": "Slight code duplication with existing backtest models, but much cleaner separation"
+  },
+  "test": {
+    "unit": ["test_orm_models_create_tables", "test_pydantic_request_validation", "test_pydantic_response_serialization"],
+    "integration": ["test_tables_created_via_create_all"],
+    "manual_checks": ["Verify column types match PRD JSON types", "Verify FK relationships are correct"],
+    "success_metrics": ["All 3 tables created with correct columns", "Pydantic models validate PRD section 7 JSON example"]
+  },
+  "meta": {
+    "agent": "@codex",
+    "module": "backend",
+    "execution_config": {
+      "method": "cli",
+      "cli_tool": "codex",
+      "enable_resume": true
+    }
+  },
+  "cli_execution_id": "MCP-strategy-backtest-2026-04-16-TASK-001",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "commit": {
+    "type": "feat",
+    "scope": "strategy-backtest",
+    "message_template": "feat(strategy-backtest): add ORM models and Pydantic schemas for strategy backtest"
+  }
+}

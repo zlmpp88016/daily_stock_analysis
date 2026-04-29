@@ -35,7 +35,23 @@ class AnalysisHistoryTestCase(unittest.TestCase):
         """为每个用例初始化独立数据库"""
         self._temp_dir = tempfile.TemporaryDirectory()
         self._db_path = os.path.join(self._temp_dir.name, "test_analysis_history.db")
+        self._original_env = {
+            key: os.environ.get(key)
+            for key in (
+                "DATABASE_URL",
+                "DATABASE_PATH",
+                "POSTGRES_HOST",
+                "POSTGRES_PORT",
+                "POSTGRES_DB",
+                "POSTGRES_USER",
+                "POSTGRES_PASSWORD",
+                "POSTGRES_SSLMODE",
+            )
+        }
+        os.environ["DATABASE_URL"] = f"sqlite:///{self._db_path}"
         os.environ["DATABASE_PATH"] = self._db_path
+        for key in ("POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_SSLMODE"):
+            os.environ.pop(key, None)
 
         Config._instance = None
         DatabaseManager.reset_instance()
@@ -44,6 +60,11 @@ class AnalysisHistoryTestCase(unittest.TestCase):
     def tearDown(self) -> None:
         """清理资源"""
         DatabaseManager.reset_instance()
+        for key, value in self._original_env.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
         self._temp_dir.cleanup()
 
     def _build_result(self) -> AnalysisResult:

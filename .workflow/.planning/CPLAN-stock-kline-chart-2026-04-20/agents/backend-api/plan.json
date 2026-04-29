@@ -1,0 +1,52 @@
+{
+  "summary": "Backend API plan for stock K-line data query with daily/weekly/monthly aggregation, MACD/KDJ/BOLL indicator calculation via indicators.py, and chip distribution endpoint via DataFetcherManager.",
+  "approach": "Follow existing FastAPI patterns: create Pydantic schemas (kline.py), implement service layer with pandas resample for period aggregation + indicator.py reuse (KlineService), expose two endpoints under /api/v1/kline/ prefix. Chip distribution uses external DataFetcherManager with circuit breaker. Tasks proceed schema-first, then service layer, then endpoints, then router registration.",
+  "task_ids": ["TASK-001", "TASK-002", "TASK-003", "TASK-004", "TASK-005"],
+  "task_count": 5,
+  "estimated_time": "150 minutes",
+  "recommended_execution": "Agent",
+  "complexity": "Medium",
+  "design_decisions": [
+    {
+      "decision": "Pandas resample for weekly/monthly aggregation",
+      "rationale": "Daily data already converted to DataFrame for indicator calculation; resample is idiomatic and correct for financial OHLCV data",
+      "tradeoff": "Requires loading all daily data into memory before aggregation"
+    },
+    {
+      "decision": "Reuse indicators.py functions directly in service layer",
+      "rationale": "calc_macd/calc_kdj/calc_boll already handle DataFrame input/output with proper validation",
+      "tradeoff": "Tight coupling to indicators.py column naming conventions (macd_dif, kdj_k, etc.)"
+    },
+    {
+      "decision": "Chip distribution as separate endpoint using external API",
+      "rationale": "Chip data not stored in stock_daily table; DataFetcherManager already has circuit breaker protection",
+      "tradeoff": "External dependency - endpoint may return 404 when external API unavailable"
+    }
+  ],
+  "_metadata": {
+    "timestamp": "2026-04-20T00:00:00.000Z",
+    "source": "cli-lite-planning-agent",
+    "plan_type": "feature",
+    "schema_version": "2.0",
+    "planning_mode": "agent-based",
+    "exploration_angles": ["backend-api"],
+    "focus_area": "backend-api",
+    "duration_seconds": 0,
+    "quality_check": {
+      "executed": true,
+      "method": "manual-validation",
+      "cli_fallback": "gemini/qwen unavailable (no API key / not installed)",
+      "dimensions": {
+        "completeness": {"passed": true, "notes": "All requirements covered: K-line query, period aggregation, MACD/KDJ/BOLL, chip distribution"},
+        "task_granularity": {"passed": true, "notes": "Each task 20-40 min scope, 5 tasks total"},
+        "dependencies": {"passed": true, "notes": "No circular deps. Linear chain: 001+002->003->004->005"},
+        "convergence_criteria": {"passed": true, "notes": "All criteria quantified and testable, no vague language"},
+        "implementation_steps": {"passed": true, "notes": "All tasks have 4-6 implementation steps"},
+        "constraint_compliance": {"passed": true, "notes": "Reuses indicators.py, follows FastAPI patterns, stock_daily data only (chip uses external)"}
+      },
+      "recommendation": "PASS",
+      "critical_issues": 0,
+      "minor_issues": 0
+    }
+  }
+}

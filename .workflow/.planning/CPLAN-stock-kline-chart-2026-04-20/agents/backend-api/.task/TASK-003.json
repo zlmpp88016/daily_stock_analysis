@@ -1,0 +1,40 @@
+{
+  "id": "TASK-003",
+  "title": "Create K-line data API endpoint",
+  "scope": "api/v1/endpoints/",
+  "action": "Create",
+  "description": "Create FastAPI router endpoint GET /api/v1/kline/{code} that accepts period (daily/weekly/monthly), start_date, end_date, limit query parameters. Calls KlineService.get_kline_data() and returns KlineDataResponse. Follow existing endpoint patterns from strategy_backtest.py.",
+  "files": [
+    {
+      "path": "api/v1/endpoints/kline.py",
+      "action": "create",
+      "target": "new file",
+      "change": "FastAPI router with GET /kline/{code} endpoint, query params for period/start/end/limit"
+    }
+  ],
+  "implementation": [
+    "Create api/v1/endpoints/kline.py with APIRouter() instance",
+    "Define GET /{code} endpoint with Path param code:str, Query params period:str='daily', start_date:Optional[str], end_date:Optional[str], limit:int=500(ge=1,le=2000)",
+    "Inject DatabaseManager via Depends(get_database_manager)",
+    "Instantiate KlineService(db_manager), call get_kline_data() with parsed parameters",
+    "Handle ValueError for invalid params (400) and generic Exception (500) following strategy_backtest.py error pattern",
+    "Return KlineDataResponse constructed from service output dict"
+  ],
+  "reference": {
+    "pattern": "FastAPI router with dependency injection, error handling via HTTPException",
+    "files": ["api/v1/endpoints/strategy_backtest.py", "api/deps.py"],
+    "examples": "Follow run_strategy_backtest() pattern: try/except with ValueError->400, Exception->500, use Depends(get_database_manager)"
+  },
+  "convergence": {
+    "criteria": [
+      "Endpoint responds to GET /api/v1/kline/{code} with period/start_date/end_date/limit query params",
+      "Returns 200 with KlineDataResponse JSON containing bars[] and indicators[]",
+      "Returns 400 for invalid period value or date format",
+      "Returns 500 with error detail for service failures",
+      "Swagger docs show endpoint with correct parameter descriptions"
+    ]
+  },
+  "depends_on": ["TASK-001", "TASK-002"],
+  "cli_execution_id": "CPLAN-stock-kline-chart-2026-04-20-TASK-003",
+  "cli_execution": { "strategy": "fork", "resume_from": "CPLAN-stock-kline-chart-2026-04-20-TASK-001" }
+}

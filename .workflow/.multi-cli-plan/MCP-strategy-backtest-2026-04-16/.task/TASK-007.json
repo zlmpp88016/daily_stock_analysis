@@ -1,0 +1,99 @@
+{
+  "id": "TASK-007",
+  "title": "Frontend: Types + API Client",
+  "description": "Create TypeScript type definitions and API client functions for the strategy backtest feature. Define interfaces matching backend Pydantic schemas and API functions for runStrategyBacktest, getRunHistory, getRunDetail. Follow existing api/backtest.ts and types/backtest.ts patterns.",
+  "type": "feature",
+  "priority": "high",
+  "effort": "small",
+  "action": "Create",
+  "scope": "apps/dsa-web/src/types/strategyBacktest.ts, apps/dsa-web/src/api/strategyBacktest.ts",
+  "depends_on": ["TASK-005"],
+  "convergence": {
+    "criteria": [
+      "types/strategyBacktest.ts defines: StrategyBacktestRequest, IndicatorConfig, MacdConfig, KdjConfig, BollConfig, StrategyBacktestRunResponse, StrategyBacktestTrade, StrategyBacktestEquity, StrategyBacktestSummary interfaces",
+      "Request interface matches PRD section 7 JSON structure exactly",
+      "api/strategyBacktest.ts exports: runStrategyBacktest(request), getRunHistory(code?, limit?), getRunDetail(runId)",
+      "API functions use apiClient from existing api/utils.ts or api/index.ts",
+      "API paths match backend: POST /api/v1/strategy-backtest/run, GET /api/v1/strategy-backtest/history, GET /api/v1/strategy-backtest/{run_id}",
+      "TypeScript compiles without errors: npx tsc --noEmit"
+    ],
+    "verification": "npx tsc --noEmit --project apps/dsa-web/tsconfig.json",
+    "definition_of_done": "TypeScript types compile and API client functions are callable"
+  },
+  "files": [
+    {
+      "path": "apps/dsa-web/src/types/strategyBacktest.ts",
+      "action": "create",
+      "target": "module",
+      "change": "Create TypeScript interfaces matching backend Pydantic schemas: request config types, indicator config, trade/equity/summary response types",
+      "conflict_risk": "low"
+    },
+    {
+      "path": "apps/dsa-web/src/api/strategyBacktest.ts",
+      "action": "create",
+      "target": "module",
+      "change": "Create API client functions: runStrategyBacktest, getRunHistory, getRunDetail using existing apiClient pattern",
+      "conflict_risk": "low"
+    }
+  ],
+  "implementation": [
+    {
+      "step": 1,
+      "title": "Study existing patterns",
+      "description": "Read apps/dsa-web/src/types/backtest.ts and apps/dsa-web/src/api/backtest.ts to understand type definition and API client patterns",
+      "actions": ["Read types/backtest.ts", "Read api/backtest.ts", "Read api/index.ts for apiClient pattern"]
+    },
+    {
+      "step": 2,
+      "title": "Create type definitions",
+      "description": "Define all TypeScript interfaces in types/strategyBacktest.ts matching PRD section 7 JSON and backend Pydantic schemas",
+      "modification_points": ["types/strategyBacktest.ts: new file"]
+    },
+    {
+      "step": 3,
+      "title": "Create API client",
+      "description": "Implement api/strategyBacktest.ts with 3 API functions using apiClient for HTTP requests, matching backend endpoint paths",
+      "modification_points": ["api/strategyBacktest.ts: new file"]
+    },
+    {
+      "step": 4,
+      "title": "Verify compilation",
+      "description": "Run TypeScript compiler to verify no type errors",
+      "actions": ["npx tsc --noEmit"]
+    }
+  ],
+  "reference": {
+    "pattern": "Existing types/backtest.ts and api/backtest.ts patterns",
+    "files": ["apps/dsa-web/src/types/backtest.ts", "apps/dsa-web/src/api/backtest.ts", "apps/dsa-web/src/api/index.ts"],
+    "examples": "Mirror backtest.ts type and API client patterns with strategy backtest namespace"
+  },
+  "rationale": {
+    "chosen_approach": "Separate types and API layers matching existing project conventions",
+    "alternatives_considered": ["Combined types+API file", "Generated types from OpenAPI"],
+    "decision_factors": ["Consistency with existing codebase", "Type safety", "Manual control over types"],
+    "tradeoffs": "Manual type sync with backend, but types are simple and stable"
+  },
+  "test": {
+    "manual_checks": ["TypeScript compiles without errors", "API paths match backend endpoints", "Request interface matches PRD JSON"],
+    "success_metrics": ["0 TypeScript errors", "All 3 API functions defined with correct signatures"]
+  },
+  "meta": {
+    "agent": "@gemini",
+    "module": "frontend",
+    "execution_config": {
+      "method": "cli",
+      "cli_tool": "gemini",
+      "enable_resume": true
+    }
+  },
+  "cli_execution_id": "MCP-strategy-backtest-2026-04-16-TASK-007",
+  "cli_execution": {
+    "strategy": "resume",
+    "resume_from": "MCP-strategy-backtest-2026-04-16-TASK-005"
+  },
+  "commit": {
+    "type": "feat",
+    "scope": "strategy-backtest",
+    "message_template": "feat(strategy-backtest): add frontend TypeScript types and API client"
+  }
+}

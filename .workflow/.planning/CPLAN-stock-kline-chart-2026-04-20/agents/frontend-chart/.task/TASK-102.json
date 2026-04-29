@@ -1,0 +1,37 @@
+{
+  "id": "TASK-102",
+  "title": "Create stock chart API layer with Axios client",
+  "scope": "apps/dsa-web/src/api/",
+  "action": "Create",
+  "description": "Create the API layer for fetching stock chart K-line data from the backend, following the existing pattern in strategyBacktest.ts. Use the shared Axios instance with camelcase-keys transform.",
+  "files": [
+    {
+      "path": "apps/dsa-web/src/api/stockChart.ts",
+      "action": "create",
+      "target": "new file",
+      "change": "Create API functions for fetching K-line data with period and date range parameters"
+    }
+  ],
+  "implementation": [
+    "Create apps/dsa-web/src/api/stockChart.ts importing apiClient from './index' and toCamelCase from './utils'",
+    "Implement stockChartApi.getKlineData(params: { code: string; period: string; startDate?: string; endDate?: string }) mapping to GET /api/v1/stock-chart/{code} with query params period, start_date, end_date",
+    "Convert request params from camelCase to snake_case for backend, apply toCamelCase on response data",
+    "Export named functions getStockChartKlineData and stockChartApi object following strategyBacktest.ts pattern"
+  ],
+  "reference": {
+    "pattern": "API layer pattern from strategyBacktest.ts",
+    "files": ["apps/dsa-web/src/api/strategyBacktest.ts", "apps/dsa-web/src/api/index.ts", "apps/dsa-web/src/api/utils.ts"],
+    "examples": "Follow strategyBacktestApi object pattern with snake_case param conversion and toCamelCase response transform"
+  },
+  "convergence": {
+    "criteria": [
+      "stockChart.ts exports stockChartApi object with getKlineData method",
+      "Request params converted from camelCase to snake_case (startDate -> start_date)",
+      "Response data transformed with toCamelCase utility",
+      "Backend endpoint: GET /api/v1/stock-chart/{code}?period=X&start_date=Y&end_date=Z"
+    ]
+  },
+  "depends_on": ["TASK-101"],
+  "cli_execution_id": "CPLAN-stock-kline-chart-2026-04-20-TASK-102",
+  "cli_execution": { "strategy": "resume", "resume_from": "CPLAN-stock-kline-chart-2026-04-20-TASK-101" }
+}

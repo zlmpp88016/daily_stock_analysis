@@ -1,0 +1,46 @@
+{
+  "id": "TASK-103",
+  "title": "Create KLineChart React wrapper component",
+  "scope": "apps/dsa-web/src/components/stock-chart/",
+  "action": "Create",
+  "description": "Create a React wrapper component for the klinecharts library. This is a low-level wrapper that manages chart initialization, data updates, indicator overlays, and cleanup. klinecharts is framework-agnostic so we need proper React lifecycle management with useRef/useEffect.",
+  "files": [
+    {
+      "path": "apps/dsa-web/src/components/stock-chart/KLineChart.tsx",
+      "action": "create",
+      "target": "new file",
+      "change": "Create React wrapper for klinecharts with init, dispose, applyNewData, createIndicator lifecycle management"
+    },
+    {
+      "path": "apps/dsa-web/src/components/stock-chart/index.ts",
+      "action": "create",
+      "target": "new file",
+      "change": "Create barrel export for stock-chart components"
+    }
+  ],
+  "implementation": [
+    "Create apps/dsa-web/src/components/stock-chart/KLineChart.tsx using useRef to hold Chart instance, useEffect for init on mount and dispose on unmount",
+    "Define KLineChartProps: data (StockChartKlineItem[]), indicators (array of indicator names like 'MACD', 'KDJ', 'BOLL', 'VOL'), height (number), className (string)",
+    "Use klinecharts `init(dom)` to create chart, `applyNewData(data)` to load K-line data, `createIndicator(name, false, {id: 'candle_pane'})` for overlay indicators and `createIndicator(name, false)` for sub-chart indicators",
+    "Map data from StockChartKlineItem to klinecharts format: { timestamp: new Date(date).getTime(), open, high, low, close, volume }",
+    "Handle indicator lifecycle: when indicators prop changes, remove old indicators via `removeIndicator` and create new ones. MACD/KDJ/VOL go to sub-panes, BOLL overlays on main candle pane",
+    "Create barrel export in index.ts"
+  ],
+  "reference": {
+    "pattern": "React wrapper for imperative library pattern (useRef + useEffect lifecycle)",
+    "files": ["apps/dsa-web/src/components/strategy-backtest/EquityCurve.tsx", "apps/dsa-web/src/components/common/Card.tsx"],
+    "examples": "klinecharts API: init(container), dispose(), applyNewData(data), createIndicator(name, isStack, paneOptions), removeIndicator(paneId, name)"
+  },
+  "convergence": {
+    "criteria": [
+      "KLineChart component accepts data, indicators, height, className props",
+      "Chart initializes on mount and disposes on unmount with no memory leaks",
+      "Data mapped from StockChartKlineItem to klinecharts {timestamp, open, high, low, close, volume} format",
+      "MACD, KDJ, VOL display as sub-chart panes; BOLL overlays on main candle pane",
+      "Component re-renders correctly when data or indicators props change"
+    ]
+  },
+  "depends_on": ["TASK-101"],
+  "cli_execution_id": "CPLAN-stock-kline-chart-2026-04-20-TASK-103",
+  "cli_execution": { "strategy": "fork", "resume_from": "CPLAN-stock-kline-chart-2026-04-20-TASK-101" }
+}

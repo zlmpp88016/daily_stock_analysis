@@ -37,6 +37,7 @@
 | 复盘 | 大盘复盘 | 每日市场概览、板块涨跌；支持 cn(A股)/us(美股)/both(两者) 切换 |
 | 智能导入 | 多源导入 | 支持图片、CSV/Excel 文件、剪贴板粘贴；Vision LLM 提取代码+名称；置信度分层确认；名称→代码解析（本地+拼音+AkShare） |
 | 回测 | AI 回测验证 | 自动评估历史分析准确率，方向胜率、止盈止损命中率 |
+| 策略回测 | 可配置规则回测 | 支持自定义指标参数、买卖规则、交易明细、资金曲线与绩效指标 |
 | **Agent 问股** | **策略对话** | **多轮策略问答，支持均线金叉/缠论/波浪等 11 种内置策略，Web/Bot/API 全链路** |
 | 推送 | 多渠道通知 | 企业微信、飞书、Telegram、钉钉、邮件、Pushover |
 | 自动化 | 定时运行 | GitHub Actions 定时执行，无需服务器 |
@@ -285,6 +286,11 @@ See [docs/stock_daily_csv_import.md](docs/stock_daily_csv_import.md) for the Pos
 **API**：`POST /api/v1/stocks/extract-from-image`（图片）、`POST /api/v1/stocks/parse-import`（文件/粘贴）。详见 [完整指南](docs/full-guide.md)。
 
 **LLM 用量查询**：`GET /api/v1/usage/summary?period=today|month|all`，返回按调用类型和模型分组的 token 消耗汇总（`total_calls`、`total_tokens`、`by_call_type`、`by_model`）。
+
+**策略回测 API**：
+- `POST /api/v1/strategy-backtest/run`：提交股票、时间区间、资金、指标和买卖规则，执行并持久化一次策略回测
+- `GET /api/v1/strategy-backtest/history?code=600519&limit=20`：查询最近的策略回测运行历史
+- `GET /api/v1/strategy-backtest/{run_id}`：查询单次运行详情，返回交易记录与资金曲线
 
 ### 🤖 Agent 策略问股
 

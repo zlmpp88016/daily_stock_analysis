@@ -1,0 +1,113 @@
+{
+  "id": "TASK-006",
+  "title": "Backend: Unit Tests",
+  "description": "Create comprehensive unit tests for indicator engine, rule engine, and backtest engine. Test indicator correctness against known values, rule edge cases (crossover boundary, NaN handling, logical composition), and full backtest simulation with synthetic data producing verified outcomes.",
+  "type": "testing",
+  "priority": "high",
+  "effort": "medium",
+  "action": "Test",
+  "scope": "tests/test_strategy_indicators.py, tests/test_strategy_rules.py, tests/test_strategy_engine.py",
+  "depends_on": ["TASK-002", "TASK-003", "TASK-004"],
+  "convergence": {
+    "criteria": [
+      "tests/test_strategy_indicators.py: 7+ tests covering MA, MACD, KDJ, BOLL correctness, NaN handling, empty input, dispatcher",
+      "tests/test_strategy_rules.py: 10+ tests covering all 6 operators, edge cases, multi-rule combination, NaN handling",
+      "tests/test_strategy_engine.py: 9+ tests covering T+1 execution, single position, commission, slippage, share rounding, drawdown, win rate",
+      "All tests use unittest framework following existing tests/ patterns",
+      "All tests use synthetic data (no external data dependencies)",
+      "Indicator tests verify values against hand-calculated references within 0.01% tolerance",
+      "Engine tests use known-outcome synthetic scenarios",
+      "All tests pass: python -m pytest tests/test_strategy_*.py -v"
+    ],
+    "verification": "python -m pytest tests/test_strategy_indicators.py tests/test_strategy_rules.py tests/test_strategy_engine.py -v --tb=short",
+    "definition_of_done": "All unit tests pass with 100% success rate covering critical paths"
+  },
+  "files": [
+    {
+      "path": "tests/test_strategy_indicators.py",
+      "action": "create",
+      "target": "module",
+      "change": "Create indicator unit tests: MA correctness, MACD correctness, KDJ correctness, BOLL correctness, NaN handling, empty input, dispatcher function",
+      "conflict_risk": "low"
+    },
+    {
+      "path": "tests/test_strategy_rules.py",
+      "action": "create",
+      "target": "module",
+      "change": "Create rule engine unit tests: parser tests for all operators, evaluator tests, edge cases, multi-rule combination",
+      "conflict_risk": "low"
+    },
+    {
+      "path": "tests/test_strategy_engine.py",
+      "action": "create",
+      "target": "module",
+      "change": "Create engine unit tests: T+1 execution, single position, commission, slippage, share rounding, max drawdown, win rate, no-signals scenario",
+      "conflict_risk": "low"
+    }
+  ],
+  "implementation": [
+    {
+      "step": 1,
+      "title": "Study existing test patterns",
+      "description": "Read existing test files in tests/ directory to understand unittest patterns, assertion conventions, and test data setup",
+      "actions": ["Read tests/ directory for existing test patterns", "Note unittest.TestCase patterns"]
+    },
+    {
+      "step": 2,
+      "title": "Create indicator tests",
+      "description": "Write tests/test_strategy_indicators.py with synthetic OHLCV data. Test each indicator against known values. Test NaN in first N-1 rows. Test empty DataFrame.",
+      "modification_points": ["tests/test_strategy_indicators.py: new file"]
+    },
+    {
+      "step": 3,
+      "title": "Create rule engine tests",
+      "description": "Write tests/test_strategy_rules.py testing parser output for all 6 operators, evaluator boolean output, crossover boundary detection, NaN handling.",
+      "modification_points": ["tests/test_strategy_rules.py: new file"]
+    },
+    {
+      "step": 4,
+      "title": "Create engine tests",
+      "description": "Write tests/test_strategy_engine.py with known-outcome synthetic scenarios. Verify T+1 timing, commission/slippage deduction, share rounding, statistics accuracy.",
+      "modification_points": ["tests/test_strategy_engine.py: new file"]
+    },
+    {
+      "step": 5,
+      "title": "Run all tests and verify",
+      "description": "Execute all test files, verify 100% pass rate, fix any issues",
+      "actions": ["Run pytest on all 3 test files", "Verify no failures or errors"]
+    }
+  ],
+  "reference": {
+    "pattern": "unittest framework following existing tests/ patterns",
+    "files": ["tests/"],
+    "examples": "Use existing test files in tests/ directory as structural reference"
+  },
+  "rationale": {
+    "chosen_approach": "Comprehensive unit tests with synthetic data ensuring no external dependencies",
+    "alternatives_considered": ["Property-based testing", "Integration tests only"],
+    "decision_factors": ["Fast execution (no DB)", "Deterministic (synthetic data)", "Full coverage of critical paths"],
+    "tradeoffs": "Does not test DB integration, but that is covered by TASK-005 integration tests"
+  },
+  "test": {
+    "success_metrics": ["26+ total tests across 3 files", "100% pass rate", "All critical paths covered: indicators, rules, engine"]
+  },
+  "meta": {
+    "agent": "@codex",
+    "module": "backend",
+    "execution_config": {
+      "method": "cli",
+      "cli_tool": "codex",
+      "enable_resume": true
+    }
+  },
+  "cli_execution_id": "MCP-strategy-backtest-2026-04-16-TASK-006",
+  "cli_execution": {
+    "strategy": "merge_fork",
+    "merge_from": ["MCP-strategy-backtest-2026-04-16-TASK-002", "MCP-strategy-backtest-2026-04-16-TASK-003", "MCP-strategy-backtest-2026-04-16-TASK-004"]
+  },
+  "commit": {
+    "type": "test",
+    "scope": "strategy-backtest",
+    "message_template": "test(strategy-backtest): add unit tests for indicators, rules, and engine"
+  }
+}

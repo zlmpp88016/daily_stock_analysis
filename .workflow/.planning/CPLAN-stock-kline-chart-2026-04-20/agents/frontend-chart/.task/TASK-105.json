@@ -1,0 +1,40 @@
+{
+  "id": "TASK-105",
+  "title": "Integrate StockChartPanel into StrategyBacktestPage",
+  "scope": "apps/dsa-web/src/pages/StrategyBacktestPage.tsx",
+  "action": "Update",
+  "description": "Add a tab system to StrategyBacktestPage to switch between the existing backtest results view and the new stock chart view. The stock chart tab uses the stock code from the existing form field. Place the StockChartPanel in the right panel area as an alternative view.",
+  "files": [
+    {
+      "path": "apps/dsa-web/src/pages/StrategyBacktestPage.tsx",
+      "action": "modify",
+      "target": "right panel section",
+      "change": "Add tab switcher (回测结果 / 个股看盘) at top of right panel, conditionally render backtest results or StockChartPanel"
+    }
+  ],
+  "implementation": [
+    "Add state: activeTab ('backtest' | 'chart') to StrategyBacktestPage component",
+    "Add tab switcher UI at the top of the right panel section (line ~664), using Badge variant toggles: 回测结果 (default active) and 个股看盘",
+    "When activeTab === 'backtest': render existing backtest results (MetricCards, EquityCurve, TradeTable - lines 720-801)",
+    "When activeTab === 'chart': render StockChartPanel with defaultCode={form.code.trim().toUpperCase()}",
+    "Auto-sync: when user enters stock code in the backtest form and switches to chart tab, StockChartPanel pre-fills the code",
+    "Import StockChartPanel from '../components/stock-chart'"
+  ],
+  "reference": {
+    "pattern": "Tab pattern using Badge toggle from existing StrategyBacktestPage UI",
+    "files": ["apps/dsa-web/src/pages/StrategyBacktestPage.tsx", "apps/dsa-web/src/components/common/Badge.tsx"],
+    "examples": "Follow existing right panel structure: Card variant='gradient' with SectionIntro header, content below"
+  },
+  "convergence": {
+    "criteria": [
+      "Right panel has two tabs: 回测结果 (backtest results) and 个股看盘 (stock chart)",
+      "Tab switching preserves state of both views (no data loss when switching)",
+      "Stock chart tab passes form.code as defaultCode to StockChartPanel",
+      "Existing backtest functionality completely unaffected (same DOM output)",
+      "Tab switcher uses consistent styling with existing Badge/Card components"
+    ]
+  },
+  "depends_on": ["TASK-104"],
+  "cli_execution_id": "CPLAN-stock-kline-chart-2026-04-20-TASK-105",
+  "cli_execution": { "strategy": "resume", "resume_from": "CPLAN-stock-kline-chart-2026-04-20-TASK-104" }
+}
